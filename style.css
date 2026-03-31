@@ -460,3 +460,91 @@ body.light-mode td.odsazena[style="font-family: verdana,arial,helvetica,sans,san
 #nadpis{
     color: var(--text-dark) !important;
 }
+
+/* Prebitie modrej farby v tabuľke na bielu v tmavom režime */
+body.dark-mode .lbn .odsazena span[style*="color: blue"] {
+    color: white !important;
+}
+
+/* Ak chceš, aby boli biele aj v svetlom režime (alebo tam chceš inú farbu, napr. čiernu) */
+body.light-mode .lbn .odsazena span[style*="color: blue"] {
+    color: var(--text-light) !important;
+}
+
+
+    fill: currentColor; /* Zabezpečí, že šípky budú mať farbu textu */
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* --- FINÁLNA OPRAVA PAGINÁTORA --- */
+
+/* 1. Zrušenie bieleho pozadia celého zoznamu */
+ul.paginator {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* 2. Prefarbenie každého políčka na tmavo sivú */
+ul.paginator li {
+    background-color: var(--zasadka-dark) !important;
+    border: 1px solid #333 !important; /* Jemný predel medzi tlačidlami */
+    margin: 0 !important;
+}
+
+/* 3. Vynútenie farby textu pre všetky odkazy a divy vnútri */
+ul.paginator li a, 
+ul.paginator li div,
+ul.paginator li a span {
+    color: var(--text-dark) !important;
+    border: none !important;
+}
+
+ul.paginator li a[data-selected="true"],
+ul.paginator li a[data-active="true"] {
+    background-color: var(--link) !important; 
+}
+
+ul.paginator li a[data-selected="true"] span,
+ul.paginator li a[data-active="true"] svg {
+    color: #000 !important;
+    fill: #000 !important;
+}
+
+ul.paginator li a[data-active="false"] {
+    opacity: 0.5;
+    background-color: var(--zasadka-dark) !important;
+}
+
+
+body.light-mode ul.paginator li {
+    background-color: var(--zasadka-light) !important;
+    border: 1px solid #333 !important; /* Jemný predel medzi tlačidlami */
+    margin: 0 !important;
+}
+
+body.light-mode ul.paginator li a[data-active="false"] {
+    opacity: 0.5;
+    background-color: var(--zasadka-light) !important;
+}
+
+body.light-mode ul.paginator li a, 
+body.light-mode ul.paginator li div,
+body.light-mode ul.paginator li a span {
+    color: var(--text-light) !important;
+    border: none !important;
+}
+/* Pridanie bieleho obrysu pre ikony v tmavom režime */
+body.dark-mode .uf-icon svg {
+    stroke: var(--link) !important; /* Farba obrysu */
+    stroke-width: 1px !important; /* Hrúbka obrysu */
+    paint-order: stroke fill !important; /* Zabezpečí, že obrys bude pod výplňou a nezmenší ikonu */
+    filter: drop-shadow(0 0 1px var(--link)) !important; /* Voliteľné: pridá jemnú žiaru pre lepší kontrast */
+}
+
+/* Ak chceš ikonu úplne vybieliť (ako sme písali predtým), nechaj aj toto: */
+body.dark-mode .uf-icon svg,
+body.dark-mode .uf-icon svg use {
+    fill: #ffffff !important;
+}
