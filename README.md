@@ -18,7 +18,7 @@ Since this extension is not on the Chrome Web Store, you must install it manuall
 
 1. **Download or clone this repository**  
    ```bash
-   git clone https://github.com/Gymoblig/BetterAis.git
+   git clone https://github.com/Greenythebeany/BetterAis.git
    ```
 2. Open **Google Chrome** (or another Chromium-based browser such as Edge or Brave).  
 3. Navigate to:  
