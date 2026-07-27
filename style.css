@@ -1037,7 +1037,9 @@ html.light-mode .zasadka {
 .zasadka,
 .zasadky-crit,
 .zasadky-info {
-  max-width: 560px;
+  /* no max-width: a 560px cap squeezed long staff notices into a narrow
+     column on a wide page. Width comes from the page container instead. */
+  max-width: 100%;
   border-radius: var(--radius) !important;
   padding: 10px 12px;
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
@@ -1275,25 +1277,64 @@ html.light-mode .uis-masonry-box-desc {
   margin-top: 18px;
 }
 
+/* Base = SECONDARY action (bordered, quiet). An earlier revision painted
+   every .uis-masonry-box-action solid red, because the only instance seen at
+   the time was the logout confirmation. These boxes are used all over the
+   public pages for ordinary actions, so red is now scoped to the -issue
+   variant only, and the accent fill to -primary. */
 html.dark-mode .uis-masonry-box-action,
 html.light-mode .uis-masonry-box-action {
-  color: #fff !important;
-  background-color: var(--tone-danger) !important;
-  padding: 10px 20px !important;
-  border: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink) !important;
+  background: var(--surface) !important;
+  padding: 10px 18px !important;
+  border: 1px solid var(--line-2) !important;
   border-radius: var(--radius-sm) !important;
   cursor: pointer;
   font: 600 13.5px/1 var(--font-sans) !important;
   box-shadow: none !important;
-  transition: filter var(--t-fast) var(--ease);
+  transition: filter var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+              background-color var(--t-fast) var(--ease);
 }
 
-.uis-masonry-box-action:hover {
+html.dark-mode .uis-masonry-box-action-primary,
+html.light-mode .uis-masonry-box-action-primary {
+  color: #fff !important;
+  background: var(--link) !important;
+  border-color: var(--link) !important;
+}
+
+/* destructive confirmations only */
+html.dark-mode .uis-masonry-box-issue .uis-masonry-box-action,
+html.light-mode .uis-masonry-box-issue .uis-masonry-box-action {
+  color: #fff !important;
+  background: var(--tone-danger) !important;
+  border-color: var(--tone-danger) !important;
+}
+
+html.dark-mode .uis-masonry-box-action:hover,
+html.light-mode .uis-masonry-box-action:hover {
   filter: brightness(1.08);
+  border-color: var(--link) !important;
+  text-decoration: none !important;
 }
 
 .uis-masonry-box-action:active {
   filter: brightness(.94);
+}
+
+/* the actions are wrapped in <a> tags - keep those from adding link styling
+   on top of the button treatment */
+.uis-masonry-box-actions a,
+.uis-masonry-box-actions a:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.uis-masonry-box-actions {
+  flex-wrap: wrap;
 }
 
 #hlavicka #menu {
@@ -1779,13 +1820,80 @@ html.light-mode table:has(> thead > tr.zahlavi) {
   height: auto;
 }
 
-/* pasted markup carries inline pt sizes and Word colour styling; clamp the
-   sizing so it stays inside the page's own type scale */
-.mainpage [class^="Mso"],
-.mainpage [class*=" Mso"] {
+/* Word paste carries a full set of inline styles: point sizes, Times New
+   Roman, align="right", text-align:justify, color:red/black, and
+   background:#F8F9FA on every block. Partially styling it (sizing only) left
+   all of that intact - black text on a dark theme, white banding from those
+   backgrounds, and randomly centred/justified paragraphs. Neutralise the lot
+   inside notice bodies and let the page's own type system apply.
+
+   scoped to .zasadky-info / .zasadky-crit / .uis_msg so genuine site content
+   elsewhere is untouched. */
+.zasadky-info [style],
+.zasadky-crit [style],
+.uis_msg [style],
+.zasadky-info [class^="Mso"],
+.zasadky-crit [class^="Mso"],
+.zasadky-info [class*=" Mso"],
+.zasadky-crit [class*=" Mso"],
+.zasadky-info .y2iqfc,
+.zasadky-crit .y2iqfc {
+  font-family: var(--font-sans) !important;
   font-size: 13.5px !important;
-  line-height: 1.6 !important;
-  margin: 0 0 8px 0 !important;
+  line-height: 1.65 !important;
+  background: none !important;
+  text-align: left !important;
+  letter-spacing: normal !important;
+}
+
+/* the pasted markup only distinguishes emphasis by colour, and its reds are
+   tuned for a white page. Map them onto theme tokens: keep red as the
+   warning tone (deadlines, cautions), everything else becomes body ink. */
+.zasadky-info [style*="color:red"],
+.zasadky-crit [style*="color:red"],
+.zasadky-info [style*="color: red"],
+.zasadky-crit [style*="color: red"] {
+  color: var(--tone-warn) !important;
+}
+
+.zasadky-info [style*="color:black"],
+.zasadky-crit [style*="color:black"],
+.zasadky-info [style*="color: black"],
+.zasadky-crit [style*="color: black"],
+.zasadky-info [style*="color:#202124"],
+.zasadky-crit [style*="color:#202124"],
+.zasadky-info [style*="rgb(32, 33, 36)"],
+.zasadky-crit [style*="rgb(32, 33, 36)"] {
+  color: var(--ink-2) !important;
+}
+
+/* the notice body is one long <li> - drop the marker and its indent */
+.zasadky-info ul,
+.zasadky-crit ul,
+.zasadky-info ol,
+.zasadky-crit ol {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.zasadky-info li,
+.zasadky-crit li {
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.zasadky-info p,
+.zasadky-crit p {
+  margin: 0 0 10px 0 !important;
+}
+
+.zasadky-info pre,
+.zasadky-crit pre {
+  background: none !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 /* ---- headerless detail tables -------------------------------------------
@@ -1805,8 +1913,8 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    <td>label</td><td>input</td> rows, which matched this rule and got painted
    as a label/value data block - that was the stray grey panel sitting behind
    those fields. */
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena),
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena),
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) {
   width: 100% !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
@@ -1818,8 +1926,8 @@ html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.
   font-size: 13.5px;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena {
   /* the site's width="160"/width="700" attributes are what squeeze these
      into a narrow column - override so the pair splits the full width */
   width: auto !important;
@@ -1832,21 +1940,21 @@ html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.
 }
 
 /* first cell is the label - give it a stable proportion and quieter tone */
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child {
   width: 34% !important;
   background: var(--surface-2) !important;
   color: var(--mute) !important;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b {
   color: var(--ink) !important;
   font-weight: 600;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena {
   border-bottom: none !important;
 }
 
