@@ -1,550 +1,2274 @@
+/* ==========================================================================
+   BetterAis - "flat modern intranet" direction: real borders, tight radii,
+   flat surfaces instead of soft shadows. STU's own accent color drives the
+   one heritage rule under the header. Theme lands on <html> before <body>
+   exists (see content.js) so there is no flash of the original unstyled site.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap');
+
 :root {
-    --bg-dark: linear-gradient(180deg, #1e1e1e, #2e2e2e);
-    --bg-light: linear-gradient(180deg, #ffffff, #f0f0f0);
-    --text-dark: #e0e0e0;
-    --text-light: #333333;
-    --link: #4a90e2;
-    --header-dark: linear-gradient(180deg, var(--link), #1e1e1e);
-    --header-light: linear-gradient(180deg, var(--link), #ffffff);
-    --zasadka-dark: #1a1a1a;
-    --zasadka-light: #e9e9e9;
+  /* the user's exact chosen accent, unmodified (set by content.js).
+     STU's own heritage maroon is the default. --link (used everywhere else
+     in this file) is derived from this per-theme, below. */
+  --link-raw: #7a1030;
+
+  --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-mono: var(--font-sans); /* no monospace/terminal look anywhere */
+
+  /* radius scale mirrors my.harvard.edu's portal tokens - generous rounding
+     on cards/surfaces, full pill on buttons and chips */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+
+  --ease: cubic-bezier(.2, .7, .15, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --t-fast: .18s;
+  --t: .28s;
+
+  /* Header logo. The source PNG is 525x82, so the width is derived from the
+     height - changing --logo-h alone keeps the artwork correctly
+     proportioned and keeps the header padding in sync (see below).
+     The artwork also carries ~32px of transparent padding on its left edge
+     (measured: visible content runs x=32..494 inside the 525px canvas), so
+     --logo-inset is that gap at the current scale. Shifting the logo left by
+     it makes the visible "STU" mark line up with the title and faculty links
+     underneath, instead of sitting indented from them. */
+  --logo-h: 62px;
+  --logo-w: calc(var(--logo-h) * 525 / 82);
+  /* Single knob for horizontal logo alignment: increase to shift the mark
+     right, decrease to shift it left. The artwork has ~32px of transparent
+     margin baked into its left edge, so the visible mark never starts where
+     the box does - this compensates for that by eye rather than by
+     arithmetic, which is what kept overshooting. */
+  --logo-nudge: 14px;
+
+  /* Shared horizontal inset for the header rows. The #menu row needs inner
+     padding for its border, which would otherwise pull the sign-out button
+     inward while the flags above stayed flush to the edge. Applying the same
+     value as padding-right on the date/flags row keeps the last flag and the
+     sign-out button on one vertical line - and because BOTH read this single
+     token, nudging it moves the pair together instead of desynchronising
+     them. */
+  --header-inset: 30px;
 }
 
-/* Base styles */
-html, body {
-    overflow-x: hidden;
-    box-sizing: border-box;
+@media (max-width: 900px) {
+  :root {
+    --logo-h: 44px;
+  }
 }
 
-body {
-    font-family: Arial, sans-serif !important;
-    transition: all 0.3s ease;
-    margin: 0;
-    padding: 0;
+/* Default (pre-JS) background so there is never a white/unstyled flash,
+   even in the sliver of time before content.js applies the real theme. */
+html {
+  background: #101216;
 }
 
-/* Combined dark/light mode styles */
-body.dark-mode {
-    background: var(--bg-dark);
-    color: var(--text-dark);
+/* ---- theme tokens -------------------------------------------------------- */
+
+/* neutrals carry a slight warm bias toward the maroon accent, so greys read
+   as chosen rather than default-grey */
+html.dark-mode {
+  --bg: #14151a;
+  --surface: #1c1e25;
+  --surface-2: #23262e;
+  --ink: #f0f1f4;
+  --ink-2: #d6d9e0;
+  --mute: #9198a6;
+  --mute-2: #6d7482;
+  --line: #2b2e37;
+  --line-2: #3a3e4a;
+  --elev: 0 1px 2px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .35);
+  --elev-lift: 0 2px 4px rgba(0, 0, 0, .5), 0 8px 20px rgba(0, 0, 0, .4);
+  --tone-info: #7aa7e0;
+  --tone-warn: #e0a94a;
+  --tone-danger: #e8676c;
+  /* Dark, saturated accents (STU maroon included) lose almost all contrast
+     against a near-black surface once used as TEXT - two dark colors read
+     as barely distinguishable. Lighten the raw accent toward white for the
+     theme-facing --link that every rule actually uses; --link-raw stays
+     available wherever the true, unmixed brand color is wanted (rare).
+     55% white read as pink (any red hue trends pink as it lightens, but
+     that much white desaturated it into pastel/candy territory) - 18% is
+     just enough lift to read against near-black while staying a clearly
+     dark wine/maroon, not pink. */
+  --link: color-mix(in srgb, var(--link-raw) 82%, white);
 }
 
-body.light-mode {
-    background: var(--bg-light);
-    color: var(--text-light);
+html.light-mode {
+  --bg: #f7f6f7;
+  --surface: #ffffff;
+  --surface-2: #faf9fa;
+  --ink: #1a1719;
+  --ink-2: #332f32;
+  --mute: #6b656a;
+  --mute-2: #8d868c;
+  --line: #e4e0e3;
+  --line-2: #d2ccd0;
+  --elev: 0 1px 2px rgba(26, 23, 25, .06), 0 2px 8px rgba(26, 23, 25, .05);
+  --elev-lift: 0 2px 4px rgba(26, 23, 25, .07), 0 10px 24px rgba(26, 23, 25, .09);
+  --tone-info: #2c6bb5;
+  --tone-warn: #a86a12;
+  --tone-danger: #c0343a;
+  /* the raw accent already has strong contrast against a light surface -
+     no adjustment needed */
+  --link: var(--link-raw);
 }
 
-body.dark-mode #hlavicka {
-    background: var(--header-dark);
-    color: var(--text-dark);
+/* ---- base -------------------------------------------------------------- */
+
+html.dark-mode,
+html.light-mode {
+  color-scheme: light dark;
 }
 
-body.light-mode #hlavicka {
-    background: var(--header-light);
-    color: var(--text-light);
+html.dark-mode body,
+html.light-mode body {
+  font-family: var(--font-sans) !important;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-size: 14.5px;
+  line-height: 1.6;
+  transition: background-color var(--t) var(--ease), color var(--t) var(--ease);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Container styles - combined */
-body.dark-mode .login-container, 
-body.dark-mode .highlightbox,
-body.dark-mode .loginform_infobox,
-body.dark-mode .loginform-section {
-    background: var(--zasadka-dark) !important;
-    color: var(--text-dark);
-    border-radius: 20px !important;
+@media (prefers-reduced-motion: reduce) {
+  html.dark-mode *,
+  html.light-mode * {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
 }
 
-body.light-mode .login-container, 
-body.light-mode .highlightbox,
-body.light-mode .loginform_infobox,
-body.light-mode .loginform-section {
-    background: var(--zasadka-light) !important;
-    color: var(--text-light);
-    border-radius: 20px !important;
+html.dark-mode ::selection,
+html.light-mode ::selection {
+  background: var(--link);
+  color: #fff;
 }
 
-body.dark-mode .login-container, 
-body.dark-mode .highlightbox {
-    box-shadow: 0 0 15px var(--link), 0 0 15px rgba(0, 0, 0, 0.5);
+html.dark-mode,
+html.light-mode {
+  scrollbar-color: var(--line-2) var(--surface);
+  scrollbar-width: thin;
 }
 
-body.light-mode .login-container, 
-body.light-mode .highlightbox {
-    box-shadow: 0 0 15px var(--link), 0 0 15px rgba(0, 0, 0, 0.5);
+html.dark-mode ::-webkit-scrollbar,
+html.light-mode ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
 }
 
-/* Text elements - combined */
-body.dark-mode .small, 
-body.dark-mode .loginform-section, 
-body.dark-mode #univerzita,
-body.dark-mode #svatek,
-body.dark-mode .tip,
-body.dark-mode .login-input-label {
-    color: var(--text-dark) !important;
+html.dark-mode ::-webkit-scrollbar-track,
+html.light-mode ::-webkit-scrollbar-track {
+  background: var(--surface);
 }
 
-body.light-mode .small, 
-body.light-mode .loginform-section, 
-body.light-mode #svatek,
-body.light-mode .tip,
-body.light-mode .login-input-label {
-    color: var(--text-light) !important;
+html.dark-mode ::-webkit-scrollbar-thumb,
+html.light-mode ::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 20px;
+  border: 3px solid var(--surface);
 }
 
-/* Input styles - combined */
-body.dark-mode input[type="text"], 
-body.dark-mode input[type="password"] {
-    background-color: #333;
-    color: var(--text-dark);
+/* Link policy - the single most important rule for how "academic" this reads.
+   Nearly every piece of content on this site is a link, so coloring all of
+   them with the accent turns the whole page into a wall of maroon. Instead:
+   body links are plain ink, and the accent is reserved for emphasis (bold /
+   featured items), primary buttons, and hover feedback. */
+html.dark-mode a,
+html.light-mode a {
+  color: var(--ink);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
 }
 
-body.light-mode input[type="text"], 
-body.light-mode input[type="password"] {
-    background-color: #f0f0f0;
-    color: var(--text-light);
+html.dark-mode a:hover,
+html.light-mode a:hover {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-body.dark-mode input[type="submit"], 
-body.dark-mode input[type="button"],
-body.light-mode input[type="submit"], 
-body.light-mode input[type="button"] {
-    background-color: var(--link) !important;
-    border-radius: 20px !important;
+/* the site marks its own "featured" entries with <b> - those, and only
+   those, carry the accent */
+html.dark-mode a > b,
+html.light-mode a > b {
+  color: var(--link);
 }
 
-body.dark-mode input[type="submit"]:hover, 
-body.dark-mode input[type="button"]:hover {
-    background-color: var(--text-light) !important;
+html.dark-mode a:focus-visible,
+html.light-mode a:focus-visible,
+html.dark-mode button:focus-visible,
+html.light-mode button:focus-visible,
+html.dark-mode input:focus-visible,
+html.light-mode input:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
-body.light-mode input[type="submit"]:hover, 
-body.light-mode input[type="button"]:hover {
-    background-color: var(--text-dark) !important;
+/* Legacy inline markup throughout the site hardcodes tiny 10px Verdana
+   table cells - reclaim those for legibility instead of chasing every
+   exact inline-style string. */
+html.dark-mode [style*="font-size: 10px"],
+html.dark-mode [style*="font-size:10px"],
+html.light-mode [style*="font-size: 10px"],
+html.light-mode [style*="font-size:10px"] {
+  font-family: var(--font-sans) !important;
+  font-size: 13px !important;
 }
 
-/* Links */
-body.dark-mode a,
-body.light-mode a {
-    color: var(--link);
+/* ---- header: flat bar, real bottom border in the accent color ---------- */
+
+html.dark-mode #hlavicka,
+html.light-mode #hlavicka {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  padding: 16px 32px;
+  border-bottom: 3px solid var(--link);
+  box-shadow: var(--elev);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  /* the site's branding CSS hardcodes this as a 940px x 170px banner box -
+     that's sized for the old maroon design and breaks our layout now */
+  min-width: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
 }
 
-
-
-.zahlavi-main .odsazena{
-    color: var(--link) !important;
-    font-weight: bold !important;
+/* the branding CSS right-aligns header content for the old banner layout -
+   force every direct child back to full width / left alignment */
+#hlavicka > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+  float: none !important;
 }
 
+/* NOTE: #ie2 as well as #ie1. The Slovak pages wrap the header row in #ie1,
+   but the English ones use #ie2 - so an #ie1-only selector silently dropped
+   the entire header layout on ?lang=en and everything collapsed to the left.
+   Every rule in this header block has to cover both ids. */
+#ie1,
+#ie2 {
+  position: relative;
+  display: flex;
+  /* flex-end, not space-between: space-between pinned the date to the left
+     edge of the row and the flags to the far right, splitting them apart.
+     Grouping both at the right keeps Slovak and English identical. */
+  justify-content: flex-end;
+  align-items: center;
+  width: 100% !important;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 16px;
+  height: auto !important;
+  min-height: calc(var(--logo-h) + 12px) !important;
+  /* derived from the logo width so the two can never drift out of sync */
+  padding-left: calc(var(--logo-w) + 28px) !important;
+  /* matches #menu's inner padding so the last flag sits on the same vertical
+     line as the sign-out button in the row below */
+  padding-right: var(--header-inset) !important;
+  box-sizing: border-box;
+  /* the real element's own site-provided background is replaced by the
+     ::before pseudo-element below - without this it renders twice */
+  background: none !important;
+}
 
-/* Common element styles */
-#ie1 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 100%;
+/* the site's logo (img.pl?userunid=183025) is white text on a fully
+   transparent 525x82 PNG. Isolated as an absolutely-positioned pseudo-element
+   (not a flex item) so it can never disrupt the svatek/vlajky flex layout,
+   and its own filter can invert it to black for light mode without touching
+   any sibling content. Measured content sits in a 462x46 region of that
+   canvas, hence the reserved width/padding to clear it. */
+html.dark-mode #ie1::before,
+html.light-mode #ie1::before,
+html.dark-mode #ie2::before,
+html.light-mode #ie2::before {
+  content: '';
+  position: absolute;
+  /* Alignment is tuned with --logo-nudge alone. An earlier attempt cropped
+     the artwork's transparent left margin via background-position, on the
+     theory that the margin was causing an indent - but that overshot and
+     pushed the mark LEFT of the title instead, so the crop is gone and the
+     image is drawn whole. Raise --logo-nudge to move the logo right, lower
+     it to move left. */
+  left: var(--logo-nudge);
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--logo-h);
+  /* the source PNG is 525x82 - width must follow that ratio or it clips */
+  aspect-ratio: 525 / 82;
+  width: auto;
+  background: url('https://is.stuba.sk/img.pl?userunid=183025') no-repeat left center;
+  background-size: contain;
+  pointer-events: none;
+}
+
+html.light-mode #ie1::before,
+html.light-mode #ie2::before {
+  filter: invert(1);
+}
+
+/* the site absolutely-positions these against the old fixed-size banner;
+   switch them to normal flow so they sit in the #ie1 flex row instead of
+   floating at fixed coordinates that no longer line up with anything */
+#svatek,
+#vlajky,
+#ais {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
 }
 
 #svatek {
-    display: flex;
-    align-items: center;
-    padding-right: 10px;
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+  font: 500 12px/1 var(--font-mono);
+  color: var(--mute);
 }
 
 #svatek span {
-    margin: 0 5px;
+  margin: 0 5px;
 }
 
-#vlajky a {
-    margin: 0 5px;
+html.dark-mode #vlajky,
+html.light-mode #vlajky {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-#univerzita {
-    font-size: 24px;
-    margin: 10px 0;
+html.dark-mode #vlajky a,
+html.light-mode #vlajky a {
+  display: inline-flex;
+  margin: 0;
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  opacity: .85;
+  transition: opacity var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+              background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
-[aria-label="breadcrumb"] {
-    margin: 80px auto 50px auto !important;
-    border-radius: 20px !important;
-    height: fit-content !important;
-    display: flex !important;
-    align-items: center !important;
-    border: var(--zasadka-light) 1px solid !important;
-    max-width: 1000px !important;
+html.dark-mode #vlajky a:hover,
+html.light-mode #vlajky a:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--link) 8%, transparent);
+  border-color: var(--line-2);
 }
 
-body.dark-mode [aria-label="breadcrumb"] {
-    background: linear-gradient(135deg, var(--link) , var(--zasadka-dark) 40%) !important;
+/* vector replacements for the 17x11px flag PNGs (see icons.js) */
+.betterais-flag {
+  display: block;
+  line-height: 0;
 }
 
-body.light-mode [aria-label="breadcrumb"] {
-    background: linear-gradient(135deg, var(--link), var(--zasadka-light) 40%) !important;
+.betterais-flag svg {
+  display: block;
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  /* a hairline keeps the white band of the Czech flag from bleeding into a
+     light background */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .18);
 }
 
-#login-btn {
-    margin-top: 20px !important;
+/* scoped under html.dark-mode/light-mode (not a bare #univerzita) so this
+   reliably beats other extensions that inject their own #univerzita rules
+   (e.g. flag-emoji-font extensions) - a plain ID selector is a specificity
+   tie decided by injection order, which is exactly what was happening */
+html.dark-mode #univerzita,
+html.light-mode #univerzita {
+  font-family: var(--font-sans) !important;
+  text-transform: none !important;
+  text-align: left !important;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin: 8px 0;
+  color: var(--ink) !important;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
 }
 
-.helpinbreadcrumbs, #titulek {
-    display: none !important;
+/* faculty nav strip under the logo */
+html.dark-mode #hlavicka a,
+html.light-mode #hlavicka a {
+  font: 600 11px/1 var(--font-mono) !important;
+  letter-spacing: .02em;
+  color: var(--mute) !important;
 }
 
-.login-input-label {
-    font-size: 18px !important;
-    font-weight: bold !important;
+#hlavicka a:hover {
+  color: var(--ink) !important;
+  text-decoration: none;
+}
+
+/* ---- page content container ----------------------------------------------
+   Fixed max-width, centred. Full-bleed was tried and looked worse in
+   practice - paragraph lines ran to ~150 characters and the icon rows looked
+   sparse - so a comfortable reading column is back. The earlier width-jump
+   bug was never about HAVING a max-width, it was that the max-width was
+   content-derived (min(1460px, ...) reacting to shrink-to-fit tables). This
+   number is a flat constant with no content term in it at all, so it is
+   identical on every page by construction - it cannot drift. */
+html.dark-mode #base,
+html.light-mode #base {
+  /* centered, 1200px is a floor not a ceiling - on a wide monitor it grows
+     up to 1400px, on a narrower one it never gets more cramped than 1200 */
+  width: min(1400px, 100% - 64px) !important;
+  min-width: 1200px;
+  margin: 0 auto !important;
+  padding: 0 0 56px 0 !important;
+  box-sizing: border-box;
+}
+
+/* the site nests the page inside a chain of completely bare <div> tags with
+   no class or id (<div><div><div><div><nav...) - depth varies per page. Each
+   one is a block box, which is 100% width by default, EXCEPT the one
+   containing whatever's widest on that particular page still shrink-wraps
+   it (e.g. E-index's 12-column grades table). #base/.mainpage alone don't
+   reach these; :not([class]):not([id]) targets exactly the anonymous
+   wrappers without touching anything we've deliberately made a flex/grid
+   (those all carry real classes). */
+html.dark-mode #base-r,
+html.light-mode #base-r,
+html.dark-mode .mainpage,
+html.light-mode .mainpage,
+html.dark-mode .mainpage div:not([class]):not([id]),
+html.light-mode .mainpage div:not([class]):not([id]),
+/* application pages (Portál študenta, e-index, ...) wrap their whole content
+   in a bare <form> - a block element same as the anonymous divs above, so
+   the fix is the same, it just needed its own selector since :not([class])
+   only matched <div>. This is what was still shrink-wrapping the study-list
+   table even after the div fix. */
+html.dark-mode .mainpage form,
+html.light-mode .mainpage form {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* EVERY data table stays a real table and fills its container. No
+   display:block anywhere - that turns the table into a plain block box and
+   silently discards the browser's native column-sizing algorithm, so
+   columns shrink to their own content and leave dead space on the right.
+   That was the bug.
+
+   An earlier attempt tried to scroll-wrap only "wide" tables, using
+   :has(td[nowrap]) as the test - but nowrap is used on ordinary date and
+   name cells in the grades table too, so that test matched the very table
+   it was meant to spare and put it straight back into display:block. The
+   distinction wasn't worth it: auto layout already sizes columns to content
+   and expands to fill, and long cell values wrap instead of overflowing. */
+html.dark-mode table:has(> thead > tr.zahlavi),
+html.light-mode table:has(> thead > tr.zahlavi) {
+  display: table !important;
+  width: 100% !important;
+  table-layout: auto;
+}
+
+/* ---- breadcrumb, plain bordered chip ------------------------------------ */
+
+html.dark-mode [aria-label="breadcrumb"],
+html.light-mode [aria-label="breadcrumb"] {
+  margin: 20px 0 32px 0 !important;
+  border-radius: var(--radius-sm) !important;
+  height: fit-content !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--line) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--elev);
+  font: 500 13px/1 var(--font-sans) !important;
+  color: var(--mute) !important;
+}
+
+/* base.css gives ol.breadcrumb flex-grow:2 - with the bar full width that
+   would stretch the home icon + text away from each other, so pin it to a
+   natural size on the left and push .searchinbreadcrumbs (a sibling, not a
+   list item) all the way to the right instead */
+[aria-label="breadcrumb"] ol.breadcrumb {
+  flex-grow: 0 !important;
+}
+
+[aria-label="breadcrumb"] .searchinbreadcrumbs {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+[aria-label="breadcrumb"] a {
+  color: var(--mute) !important;
+}
+
+[aria-label="breadcrumb"] a:hover {
+  color: var(--ink) !important;
+}
+
+.helpinbreadcrumbs {
+  display: none !important;
+}
+
+/* NOTE: #titulek is deliberately NOT hidden here. It was, early on, because
+   it duplicates the breadcrumb title on the login page - but on inner
+   application pages it holds the page heading AND functional controls (the
+   study/period <select> on the e-index page), so hiding it sitewide broke
+   them. The login page hides it locally in login.css instead. */
+html.dark-mode #titulek,
+html.light-mode #titulek {
+  display: block !important;
+  margin: 20px 0 20px 0;
+}
+
+html.dark-mode #titulek h1,
+html.light-mode #titulek h1 {
+  font: 700 clamp(20px, 2.4vw, 26px)/1.25 var(--font-sans) !important;
+  color: var(--ink) !important;
+  background: none !important;
+  border: none !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 0 6px 0 !important;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+}
+
+html.dark-mode #titulek > div,
+html.light-mode #titulek > div {
+  font-size: 13px !important;
+  color: var(--mute) !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+html.dark-mode #titulek b,
+html.light-mode #titulek b {
+  color: var(--ink-2) !important;
+}
+
+/* ---- login page ----------------------------------------------------------- */
+
+html.dark-mode .login-container,
+html.dark-mode .highlightbox,
+html.dark-mode .loginform_infobox,
+html.dark-mode .loginform-section,
+html.light-mode .login-container,
+html.light-mode .highlightbox,
+html.light-mode .loginform_infobox,
+html.light-mode .loginform-section {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border-radius: var(--radius) !important;
+}
+
+html.dark-mode .login-container,
+html.dark-mode .highlightbox,
+html.light-mode .login-container,
+html.light-mode .highlightbox {
+  box-shadow: none;
+  border: 1px solid var(--line);
+  transition: border-color var(--t) var(--ease);
+}
+
+.login-container,
+.highlightbox {
+  max-width: 420px;
+  padding: 32px;
+  border-color: transparent !important;
+  z-index: 1000;
+  box-sizing: border-box;
 }
 
 .loginform-section {
-    padding: 10px !important;
-    margin-bottom: 15px !important;
-    max-width: 100% !important;
-    box-sizing: border-box;
+  padding: 8px !important;
+  margin-bottom: 14px !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
-.login-container, .highlightbox {
-    max-width: 400px;
-    padding: 20px;
-    border-radius: 20px !important;
-    border-color: transparent !important;
-    z-index: 1000;
-    box-sizing: border-box;
+/* NOTE: .small is deliberately NOT listed here - it has its own dedicated,
+   more specific rule further down. It used to be grouped in with these
+   unrelated elements and fight that rule for the same property (both
+   !important, same specificity - whichever was declared later silently won),
+   which is exactly what made this text render in --mute instead of the
+   intended --ink-2 and read as low-contrast. */
+html.dark-mode .loginform-section,
+html.dark-mode #univerzita,
+html.dark-mode #svatek,
+html.dark-mode .tip,
+html.dark-mode .login-input-label,
+html.light-mode .loginform-section,
+html.light-mode #svatek,
+html.light-mode .tip,
+html.light-mode .login-input-label {
+  color: var(--ink) !important;
 }
 
-input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    border: 1px solid #444 !important;
-    border-radius: 5px;
-    box-sizing: border-box;
-    outline: none;
-    box-shadow: none;
-}
-
-input[type="submit"] {
-    color: white !important;
-    padding: 15px;
-    border: none !important;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-a {
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
+.login-input-label {
+  font: 600 12px/1 var(--font-mono) !important;
+  letter-spacing: .02em;
+  color: var(--mute) !important;
+  margin-bottom: 8px;
 }
 
 .tip {
-    font-size: 14px;
-    margin-top: 20px;
+  font-size: 13px;
+  margin-top: 20px;
+  color: var(--mute);
 }
 
-/* Polozky styles */
-body.dark-mode .polozky-obal {
-    background-color: var(--bg-dark) !important;
-    border-color: var(--link) !important;
+/* ---- form controls ---------------------------------------------------- */
+
+html.dark-mode input[type="text"],
+html.dark-mode input[type="password"],
+html.light-mode input[type="text"],
+html.light-mode input[type="password"] {
+  background-color: var(--bg) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line-2) !important;
 }
 
-body.light-mode .polozky-obal {
-    background-color: var(--bg-light) !important;
-    border-color: var(--link) !important;
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 11px 13px;
+  margin: 8px 0;
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  outline: none;
+  box-shadow: none;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
-.polozky-obal {
-    min-height: 200px !important;
-    font-size: 15px;
+html.dark-mode input[type="text"]:focus,
+html.dark-mode input[type="password"]:focus,
+html.light-mode input[type="text"]:focus,
+html.light-mode input[type="password"]:focus {
+  border-color: var(--link) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 20%, transparent);
 }
 
-.vsechny-polozky {
-    border-radius: 40px;
+input[type="submit"],
+input[type="button"] {
+  color: #fff !important;
+  background-color: var(--link) !important;
+  padding: 12px 24px;
+  border: none !important;
+  border-radius: var(--radius-pill) !important;
+  cursor: pointer;
+  font: 600 14px/1 var(--font-sans);
+  letter-spacing: .01em;
+  transition: filter var(--t-fast) var(--ease);
+  box-shadow: none;
 }
 
-/* Sekce styles */
-body.dark-mode .sekce-nadpis {
-    background-color: var(--bg-dark) !important;
-    color: var(--text-dark) !important;
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  filter: brightness(1.08);
 }
 
-body.light-mode .sekce-nadpis {
-    background-color: var(--bg-light) !important;
-    color: var(--text-light) !important;
+input[type="submit"]:active,
+input[type="button"]:active {
+  filter: brightness(.94);
 }
 
-.sekce-nadpis {
-    text-align: left;
-    padding-right: 500px;
+#login-btn {
+  margin-top: 18px !important;
+  width: 100%;
 }
 
-/* Zasadka styles */
-body.dark-mode .zasadka, 
-body.dark-mode .zasadky-crit, 
-body.dark-mode .zasadky-info,
-body.dark-mode .odsazena,
-body.dark-mode .zahlavi {
-    background-color: var(--zasadka-dark) !important;
-}
-
-body.light-mode .zasadka, 
-body.light-mode .zasadky-crit, 
-body.light-mode .zasadky-info,
-body.light-mode .odsazena,
-body.light-mode .zahlavi {
-    background-color: var(--zasadka-light) !important;
-}
-
-
-.zasadka, .zasadky-crit, .zasadky-info {
-    max-width: 500px;
-    border-radius: 20px !important;
-}
-
-.zasadky-info .odsazena, 
-.zasadky-crit .odsazena {
-    border-radius: 20px;
-}
-
-.zahlavi {
-    color: var(--link) !important;
-}
-
-.odsazena.active {
-    border-color: var(--link) !important;
-}
-
-body.dark-mode .odsazena.active {
-    background-color: var(--text-light) !important;
-}
-
-body.light-mode .odsazena.active {
-    background-color: var(--text-dark) !important;
-}
-
-/* Menitko styles */
-body.dark-mode #menitko #vsechny-polozky > .polozky-obal {
-    box-shadow: 0px 0px 0px 1px var(--zasadka-dark) inset !important;
-    background: linear-gradient(var(--zasadka-dark) 2rem, transparent 2rem) !important;
-}
-
-body.light-mode #menitko #vsechny-polozky > .polozky-obal {
-    box-shadow: 0px 0px 0px 1px var(--zasadka-light) inset !important;
-    background: linear-gradient(var(--zasadka-light) 2rem, transparent 2rem) !important;
-}
-
-.portal_menu_hole {
-    border: none !important;
-}
-
-/* Checkbox styles */
 input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px !important;
-    height: 20px !important;
-    border: 2px solid var(--text-light);
-    border-radius: 20px !important;
-    background: var(--text-dark);
-    cursor: pointer;
-    outline: none;
-    display: inline-block;
-}
-
-body.light-mode input[type="checkbox"] {
-    background: var(--text-dark) !important;
-    border: 2px solid var(--text-dark);
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px !important;
+  height: 18px !important;
+  border: 1px solid var(--line-2);
+  border-radius: 4px !important;
+  background: var(--bg);
+  cursor: pointer;
+  outline: none;
+  display: inline-block;
+  vertical-align: middle;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
 
 input[type="checkbox"]:checked {
-    color: #fff;
-    background-color: var(--link) !important;
-    border: 2px solid var(--link) !important;
-    border-radius: 20px;
+  background-color: var(--link) !important;
+  border: 1px solid var(--link) !important;
 }
 
-/* Button styles */
-#finder, #otevrit-vse, #zavrit-vse {
-    margin-bottom: 15px;
+/* ---- content sections / callout boxes --------------------------------- */
+
+.zahlavi-main .odsazena {
+  color: var(--link) !important;
+  font-weight: 700 !important;
 }
 
-#finder a, #otevrit-vse a, #zavrit-vse a {
-    display: flex;
-    color: var(--text-dark) !important;
-    background-color: var(--link) !important;
-    justify-content: center;
-    align-items: center;
-    text-decoration: none;
-    width: 100px;
-    height: 100%;
-    padding: 5px;
-    border-radius: 20px !important;
+html.dark-mode .obsah,
+html.light-mode .obsah {
+  background: var(--surface) !important;
+  opacity: 1 !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius);
 }
 
-
-body.dark-mode .obsah{
-    background-color: var(--bg-dark) !important;
-    opacity: 100% !important;
-    border:var(--link) 1px solid !important;
-
+/* section cards in the #menitko app grid ("Portál verejných informácií",
+   "Moje štúdium", etc.) */
+html.dark-mode .polozky-obal,
+html.light-mode .polozky-obal {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: var(--elev);
+  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease),
+              transform var(--t) var(--ease);
 }
-body.light-mode .obsah{
-    background-color: var(--bg-light) !important;
-    opacity: 100% !important;
-    border:var(--link) 1px solid !important;
 
+html.dark-mode .polozky-obal:hover,
+html.light-mode .polozky-obal:hover {
+  border-color: var(--line-2) !important;
+  box-shadow: var(--elev-lift);
+  transform: translateY(-2px);
+}
+
+.polozky-obal {
+  /* the site pins these at a fixed height for its old column layout, which
+     leaves short sections (eLearning has two links) as tall empty boxes */
+  min-height: 0 !important;
+  height: auto !important;
+  font-size: 14px;
+  border-radius: var(--radius);
+  padding: 22px 24px !important;
+  /* the site's own JS (menitka.js) computes each card's width for its
+     drag-to-reorder masonry grid, based on content measurements - our
+     padding/font/icon changes have thrown that off, leaving some rows
+     badly uneven. Force a consistent, responsive width instead of trusting
+     its calculation. */
+  flex: 1 1 300px !important;
+  width: auto !important;
+  min-width: 280px !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+#vsechny-polozky,
+.vsechny-polozky > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 20px !important;
+}
+
+/* icon badge: bordered tinted square behind each card's icon */
+html.dark-mode .polozky-obr,
+html.light-mode .polozky-obr {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+  aspect-ratio: 1 / 1 !important;
+  flex: none !important;
+  padding: 0 !important;
+  border-radius: var(--radius-sm) !important;
+  /* icons.js sizes these icons at 100% - the padding here is what actually
+     controls the glyph size inside the badge */
+  padding: 11px !important;
+  background: color-mix(in srgb, var(--link) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--link) 20%, var(--line));
+  color: var(--link);
+  margin: 0 0 16px 0 !important;
+  overflow: hidden;
+}
+
+.polozky-obr svg {
+  display: block;
+  flex: none !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* ---- collapsed sections (#closed-sections) --------------------------------
+   Each is a bare <div><a><svg></a><br><a>Label</a></div> with zero styling
+   of its own - icon badge to match the expanded cards instead of a raw
+   oversized icon, laid out as a horizontal row of tiles. */
+html.dark-mode #closed-sections,
+html.light-mode #closed-sections {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 0 0;
+}
+
+html.dark-mode .closed-section,
+html.light-mode .closed-section {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 108px;
+  padding: 14px 10px;
+  text-align: center;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--elev);
+  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease),
+              transform var(--t) var(--ease);
+}
+
+html.dark-mode .closed-section:hover,
+html.light-mode .closed-section:hover {
+  border-color: var(--line-2) !important;
+  box-shadow: var(--elev-lift);
+  transform: translateY(-2px);
+}
+
+/* first <a> = icon, no badge sizing rules apply here since there's no
+   .polozky-obr wrapper - build the same badge directly on the anchor */
+html.dark-mode .closed-section > a:first-child,
+html.light-mode .closed-section > a:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--link) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--link) 20%, var(--line));
+  color: var(--link) !important;
+}
+
+.closed-section > a:first-child svg {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* the site's own <br> would otherwise force a line break inside a flex
+   column that doesn't need one */
+.closed-section br {
+  display: none;
+}
+
+html.dark-mode .closed-section > a:last-child,
+html.light-mode .closed-section > a:last-child {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink-2) !important;
+  text-wrap: balance;
+}
+
+html.dark-mode .closed-section:hover > a:last-child,
+html.light-mode .closed-section:hover > a:last-child {
+  color: var(--link) !important;
+  text-decoration: none;
+}
+
+/* only bold links ("featured" items, wrapped in <b> in the source) keep the
+   accent color - plain links just use normal text color like a real list,
+   not everything shouting the same accent */
+html.dark-mode .polozky-obal a,
+html.light-mode .polozky-obal a {
+  color: var(--ink) !important;
+  font-weight: 400;
+}
+
+html.dark-mode .polozky-obal a:has(b),
+html.light-mode .polozky-obal a:has(b) {
+  color: var(--link) !important;
+  font-weight: 600;
+}
+
+html.dark-mode .polozky-obal a:hover,
+html.light-mode .polozky-obal a:hover {
+  color: var(--link) !important;
+}
+
+/* the site draws list bullets as a small red square background-image -
+   swap for a plain themed dot */
+.polozky-obal ul {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.polozky-obal ul > li {
+  background: none !important;
+  position: relative;
+  padding-left: 16px !important;
+  margin: 6px 0 !important;
+  line-height: 1.5;
+}
+
+.polozky-obal ul > li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: .65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mute);
+}
+
+.vsechny-polozky {
+  border-radius: var(--radius-lg);
+  overflow: visible;
+}
+
+html.dark-mode .sekce-nadpis {
+  background-color: transparent !important;
+  color: var(--ink) !important;
+}
+
+html.light-mode .sekce-nadpis {
+  background-color: transparent !important;
+  color: var(--mute) !important;
+}
+
+/* The gear/collapse controls are revealed on hover and, being inline, they
+   steal horizontal space from the title - which made it re-wrap and shift the
+   whole card. Take them out of flow into the card's top-right corner and
+   permanently reserve room for them, so hovering changes nothing but opacity. */
+.polozky-obal .ramecek-boky {
+  position: relative;
+}
+
+.polozky-obal .menusectionclose,
+.polozky-obal .menusectionsetup {
+  position: absolute !important;
+  top: 0;
+  margin: 0 !important;
+  display: block !important;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+
+.polozky-obal .menusectionsetup {
+  right: 22px;
+}
+
+.polozky-obal .menusectionclose {
+  right: 0;
+}
+
+.polozky-obal:hover .menusectionclose,
+.polozky-obal:hover .menusectionsetup,
+.polozky-obal:focus-within .menusectionclose,
+.polozky-obal:focus-within .menusectionsetup {
+  opacity: 1;
+}
+
+.sekce-nadpis {
+  text-align: left;
+  /* permanent room for the two absolutely-positioned controls above */
+  padding-right: 48px;
+  font: 700 15px/1.35 var(--font-sans);
+  letter-spacing: 0;
+  /* the site truncates these with ellipsis for its old fixed-width columns -
+     our cards are fluid, so let the full title wrap instead of being cut */
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  display: block !important;
+  max-width: 100% !important;
+  text-wrap: balance;
+}
+
+.polozky-obal .polozky,
+.polozky-obal .ramecek-boky,
+.polozky-obal .ramecek-boky > div {
+  overflow: visible !important;
+  white-space: normal !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+/* notice/alert cards ("MTF TRNAVA - Termín zápisov...", the credit top-up
+   notice, etc.) - same flat bordered surface as the section cards */
+html.dark-mode .zasadka,
+html.dark-mode .zasadky-crit,
+html.dark-mode .zasadky-info,
+html.dark-mode .odsazena,
+html.dark-mode .zahlavi,
+html.light-mode .zasadka,
+html.light-mode .zasadky-crit,
+html.light-mode .zasadky-info,
+html.light-mode .odsazena,
+html.light-mode .zahlavi {
+  background: var(--surface) !important;
+}
+
+html.dark-mode .zasadka,
+html.light-mode .zasadka {
+  border: 1px solid var(--line);
+  box-shadow: var(--elev);
+}
+
+.zasadka,
+.zasadky-crit,
+.zasadky-info {
+  max-width: 560px;
+  border-radius: var(--radius) !important;
+  padding: 10px 12px;
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+/* the notice body is a nested <table> whose own borders (and its cells')
+   come from the site's stylesheet and were showing through as a hard black
+   outline inside our card - the card itself provides the only border */
+html.dark-mode .zasadka table,
+html.light-mode .zasadka table,
+html.dark-mode .zasadka td,
+html.light-mode .zasadka td,
+html.dark-mode .zasadka tr,
+html.light-mode .zasadka tr,
+html.dark-mode .zasadka tbody,
+html.light-mode .zasadka tbody {
+  border: none !important;
+  border-collapse: collapse !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.zasadka:hover {
+  border-color: var(--line-2);
+  box-shadow: var(--elev-lift);
+}
+
+/* notice text sits at normal reading weight/color - the icon and any bold
+   <b> emphasis carry the signal instead of coloring every line */
+html.dark-mode .zasadka a,
+html.light-mode .zasadka a {
+  color: var(--ink-2) !important;
+  line-height: 1.55;
+}
+
+/* each notice line is prefixed with a literal "::" text node in the source.
+   Same trick as the faculty nav separators: collapse the raw text on the
+   container, restore size on the real children, and use a proper bullet. */
+.zasadka .toast {
+  font-size: 0 !important;
+  position: relative;
+  padding-left: 16px;
+  margin: 4px 0;
+}
+
+.zasadka .toast > * {
+  font-size: 13.5px !important;
+}
+
+.zasadka .toast::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: .62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mute-2);
+}
+
+.zasadka ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.zasadka ul > li {
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.dark-mode .zasadka a:hover,
+html.light-mode .zasadka a:hover {
+  color: var(--link) !important;
+}
+
+.zasadky-info .odsazena,
+.zasadky-crit .odsazena {
+  border-radius: var(--radius);
+}
+
+/* these notices are laid out as a 2-cell table (icon | content). The icon
+   cell is centred on both axes - vertical-align:middle for top-to-bottom,
+   text-align:center for left-to-right, and symmetric padding so nothing
+   pulls it off-centre. (An earlier revision pinned it to the top to line up
+   with the first line of multi-line notices, with lopsided padding to
+   match - that's what was making it sit high and left.) */
+.zasadky-info > tbody > tr > td.odsazena:first-child,
+.zasadky-crit > tbody > tr > td.odsazena:first-child {
+  vertical-align: middle !important;
+  text-align: center !important;
+  padding: 10px 14px !important;
+  width: 1% !important;
+  white-space: nowrap;
+}
+
+.zasadky-info > tbody > tr > td.odsazena:first-child svg,
+.zasadky-crit > tbody > tr > td.odsazena:first-child svg {
+  display: block;
+  margin: 0 auto;
+  /* !important is required here: icons.js writes width/height inline on
+     these, and a stylesheet declaration only beats an inline style when
+     it's !important */
+  width: 64px !important;
+  height: 64px !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+.zahlavi {
+  color: var(--link) !important;
+  font-weight: 700;
+}
+
+.odsazena.active {
+  border-color: var(--link) !important;
+}
+
+html.dark-mode .odsazena.active,
+html.light-mode .odsazena.active {
+  background-color: var(--bg) !important;
+}
+
+html.dark-mode #menitko #vsechny-polozky > .polozky-obal,
+html.light-mode #menitko #vsechny-polozky > .polozky-obal {
+  box-shadow: none !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.portal_menu_hole {
+  border: none !important;
+}
+
+/* ---- quick action buttons (finder / open-all / close-all) ------------- */
+
+#finder,
+#otevrit-vse,
+#zavrit-vse {
+  margin-bottom: 14px;
+}
+
+html.dark-mode #finder a,
+html.dark-mode #otevrit-vse a,
+html.dark-mode #zavrit-vse a,
+html.light-mode #finder a,
+html.light-mode #otevrit-vse a,
+html.light-mode #zavrit-vse a {
+  display: flex;
+  color: #fff !important;
+  background: var(--link) !important;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  width: auto;
+  min-width: 130px;
+  height: 100%;
+  min-height: 40px;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill) !important;
+  font: 600 13px/1 var(--font-sans);
+  box-shadow: var(--elev);
+  transition: filter var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+#finder a:hover,
+#otevrit-vse a:hover,
+#zavrit-vse a:hover {
+  filter: brightness(1.08);
+  box-shadow: var(--elev-lift);
+  text-decoration: none;
+}
+
+#finder a:active,
+#otevrit-vse a:active,
+#zavrit-vse a:active {
+  filter: brightness(.94);
+}
+
+#finder a span,
+#otevrit-vse,
+#zavrit-vse {
+  color: #fff !important;
 }
 
 big b {
-    color: var(--link) !important;
+  color: var(--link) !important;
 }
 
+/* ---- misc content widgets ---------------------------------------------- */
 
-body.light-mode #otevrit-vse, 
-body.light-mode #zavrit-vse, 
-body.light-mode #finder {
-    color: var(--text-light) !important;
+/* .uis-masonry is the outer grid the box sits in (used for the logout
+   confirm dialog, cookie-consent notice, etc.) - shouldn't be full width,
+   it's a single small dialog, not a page section */
+.uis-masonry {
+  max-width: 480px;
 }
 
-#finder a span, #otevrit-vse, #zavrit-vse {
-    color: var(--text-dark) !important;
+html.dark-mode .uis-masonry-box,
+html.light-mode .uis-masonry-box {
+  background: var(--surface) !important;
+  border: 1px solid var(--line);
+  box-shadow: var(--elev);
 }
 
-/* uis-masonry-box styling */
 .uis-masonry-box {
-    color: var(--link) !important;
-    background-color: var(--zasadka-dark) !important;
-}
-body.light-mode .uis-masonry-box {
-    background-color: var(--zasadka-light) !important;
+  border-radius: var(--radius);
+  padding: 22px;
 }
 
-#menu{
-    font-size: 18px !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    border-bottom: #f0f0f0 1px solid !important;
+/* -issue is the warning/destructive variant (logout confirm, error states) -
+   a left accent stripe in the danger tone instead of tinting the whole box */
+html.dark-mode .uis-masonry-box-issue,
+html.light-mode .uis-masonry-box-issue {
+  border-left: 3px solid var(--tone-danger) !important;
 }
 
-body.dark-mode .bunka_seda {
-    border-radius: 20px !important;
-    background-color: var(--zasadka-dark) !important;
-    color: var(--text-dark) !important;
+html.dark-mode .uis-masonry-box-title,
+html.light-mode .uis-masonry-box-title {
+  font: 700 16px/1.3 var(--font-sans) !important;
+  color: var(--ink) !important;
+  margin: 0 0 8px 0;
 }
 
-body.light-mode .bunka_seda {
-    border-radius: 20px !important;
-    background-color: var(--zasadka-light) !important;
-    color: var(--text-light) !important;
+html.dark-mode .uis-masonry-box-desc,
+html.light-mode .uis-masonry-box-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--mute) !important;
 }
 
+.uis-masonry-box-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
 
-/* výnimky pre konkrétne bunky */
-body.dark-mode td.odsazena[style="font-family: verdana,arial,helvetica,sans,sans-serif; font-size: 10px;padding: 0 !important; border-style: solid; border-width: 0px 0px 0px 0px; border-color: #F3F3F3;border-right: solid 1px black;background-color: #d99694;"]{
+html.dark-mode .uis-masonry-box-action,
+html.light-mode .uis-masonry-box-action {
+  color: #fff !important;
+  background-color: var(--tone-danger) !important;
+  padding: 10px 20px !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  cursor: pointer;
+  font: 600 13.5px/1 var(--font-sans) !important;
+  box-shadow: none !important;
+  transition: filter var(--t-fast) var(--ease);
+}
+
+.uis-masonry-box-action:hover {
+  filter: brightness(1.08);
+}
+
+.uis-masonry-box-action:active {
+  filter: brightness(.94);
+}
+
+#hlavicka #menu {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  /* explicit here, not just inherited from the #hlavicka > * rule further up
+     - belt-and-suspenders after this kept failing to visibly reach the far
+     right, in case something in the cascade was quietly winning on width.
+     NOT justify-content:space-between - with 4 separate flex children
+     (odkazy_fakult, ema, log, ikonky) that would spread all four out
+     individually instead of grouping [ema,log,ikonky] together on the
+     right, which is what the margin-left:auto below actually does. */
+  width: 100% !important;
+  gap: 10px 20px;
+  font: 600 13px/1 var(--font-sans) !important;
+  /* Content sits HIGH in the row so the rule below reads as a divider
+     underneath it, rather than a stray line running behind the text:
+     small padding above, generous padding below, then the border. */
+  /* horizontal padding is deliberately the same value as #ie1/#ie2's
+     padding-right above, so the sign-out button lines up with the flags */
+  padding: 10px var(--header-inset) !important;
+  margin-top: 0 !important;
+  /* base.css pins this to height:25px. With border-box sizing plus 10px of
+     vertical padding that leaves a ~5px content box, so the links overflowed
+     BELOW the bordered box - which is why the outline appeared to float
+     above the text instead of wrapping it. */
+  height: auto !important;
+  min-height: 0 !important;
+  line-height: 1.4 !important;
+  /* A full --radius-pill capsule looked wrong stretched across the entire
+     row - at that width the huge end caps read as a distortion rather than
+     a deliberate shape. A normal rounded rectangle suits a full-width
+     container. The site draws its own box here, so all edges are cleared
+     and replaced wholesale. */
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  background: var(--surface) !important;
+  box-sizing: border-box;
+}
+
+/* #menu has 4 sibling divs: nav links, icons, message/doc/task counts,
+   logged-in-as. Nav stays where it is (start of the row); margin-left:auto
+   on the next one pushes it and everything after it to the far right as a
+   group, instead of each div stacking on its own line. */
+#odkazy_fakult {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  /* the site writes literal "|" characters as text between the <a> tags -
+     collapse that raw text to invisible, then restore font-size only on
+     the links themselves (below) and draw a proper divider instead */
+  font-size: 0;
+}
+
+html.dark-mode #odkazy_fakult a,
+html.light-mode #odkazy_fakult a {
+  position: relative;
+  padding-right: 12px;
+  font-size: 11px !important;
+  font-family: var(--font-mono) !important;
+  letter-spacing: .02em;
+}
+
+html.dark-mode #odkazy_fakult a:not(:last-child)::after,
+html.light-mode #odkazy_fakult a:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 12px;
+  background: var(--line-2);
+}
+
+/* DOM order is ikonky (logout icon), ema (counts), log (logged-in-as) - put
+   the logout icon last visually by pushing the whole group's left margin
+   onto ema instead, and ordering ikonky after everything else */
+html.dark-mode #ikonky,
+html.light-mode #ikonky {
+  order: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* !important so a later rule in this file can never silently clobber it
+   again - this single declaration is what pushes the whole meta group
+   (counts, logged-in-as, sign-out) to the far right of the header row */
+html.dark-mode #ema,
+html.light-mode #ema {
+  order: 1;
+  margin-left: auto !important;
+}
+
+html.dark-mode #log,
+html.light-mode #log {
+  order: 2;
+}
+
+html.dark-mode #ema,
+html.light-mode #ema,
+html.dark-mode #log,
+html.light-mode #log {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--mute) !important;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  /* icons.js strips the site's divider graphics; draw real separators.
+     NOTE: no margin-left here. This rule sits AFTER the margin-left:auto on
+     #ema that pushes the whole meta group to the far right, and at equal
+     specificity - so setting margin-left:14px here silently overwrote the
+     auto and was the entire reason the group never reached the right edge.
+     The 14px gap is expressed as padding + the #menu gap instead. */
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+}
+
+html.dark-mode #ema a,
+html.light-mode #ema a,
+html.dark-mode #log a,
+html.light-mode #log a {
+  color: var(--ink) !important;
+  font-weight: 600;
+}
+
+html.dark-mode #ema a:hover,
+html.light-mode #ema a:hover,
+html.dark-mode #log a:hover,
+html.light-mode #log a:hover {
+  color: var(--link) !important;
+}
+
+/* sign-out: a real icon button rather than a bare glyph */
+html.dark-mode #ikonky a,
+html.light-mode #ikonky a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--mute) !important;
+  border: 1px solid transparent;
+  transition: color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+
+html.dark-mode #ikonky a:hover,
+html.light-mode #ikonky a:hover {
+  color: var(--tone-danger) !important;
+  background: color-mix(in srgb, var(--tone-danger) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--tone-danger) 25%, transparent) !important;
+  text-decoration: none;
+}
+
+/* header icons injected by icons.js (sign out, date, name day) */
+.betterais-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  color: inherit;
+}
+
+.betterais-header-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+#ikonky .betterais-header-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.in-header {
+  vertical-align: middle;
+}
+
+html.dark-mode .bunka_seda,
+html.light-mode .bunka_seda {
+  border-radius: var(--radius-sm) !important;
+  background-color: var(--surface) !important;
+  border: 1px solid var(--line);
+  color: var(--ink) !important;
+}
+
+/* Legacy inline-styled highlight cells (still matched by their literal
+   style strings, generalized fallback covers future markup drift). */
+td.odsazena[style*="background-color: #d99694"],
+td.odsazena[style*="background-color:#d99694"] {
   background-color: var(--link) !important;
 }
 
-body.light-mode td.odsazena[style="font-family: verdana,arial,helvetica,sans,sans-serif; font-size: 10px;padding: 0 !important; border-style: solid; border-width: 0px 0px 0px 0px; border-color: #F3F3F3;border-right: solid 1px black;background-color: #d99694;"]{
-  background-color: var(--link) !important;
+td.odsazena[style*="background-color: #c0c0c0"],
+td.odsazena[style*="background-color:#c0c0c0"] {
+  background-color: var(--line-2) !important;
 }
 
-body.dark-mode td.odsazena[style="font-family: verdana,arial,helvetica,sans,sans-serif; font-size: 10px;padding: 0 !important; border-style: solid; border-width: 0px 0px 0px 0px; border-color: #F3F3F3;background-color: #c0c0c0;"]{
-  background-color: var(--text-light) !important;
+#nadpis {
+  color: var(--ink) !important;
 }
 
-body.light-mode td.odsazena[style="font-family: verdana,arial,helvetica,sans,sans-serif; font-size: 10px;padding: 0 !important; border-style: solid; border-width: 0px 0px 0px 0px; border-color: #F3F3F3;background-color: #c0c0c0;"]{
-  background-color: var(--text-dark) !important;
+html.dark-mode .lbn .odsazena span[style*="color: blue"],
+html.light-mode .lbn .odsazena span[style*="color: blue"] {
+  color: var(--ink) !important;
 }
 
-#nadpis{
-    color: var(--text-dark) !important;
+/* icons are Tabler's filled/solid set (icons.js) - single-color fill, no
+   stroke. .uf-icon's own box size (e.g. 24x24 for .xs) comes from the site's
+   own --_multiplier scaling system - instead of floating a smaller
+   fixed-size icon inside that box, center the box and fill 70% of it. */
+.uf-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle;
 }
 
-/* Prebitie modrej farby v tabuľke na bielu v tmavom režime */
-body.dark-mode .lbn .odsazena span[style*="color: blue"] {
-    color: white !important;
+/* Only bump the breadcrumb's own icons - .xs is used throughout the site's
+   data tables for inline status markers, which must stay text-sized. */
+[aria-label="breadcrumb"] .uf-icon.xs {
+  width: 28px !important;
+  height: 28px !important;
 }
 
-/* Ak chceš, aby boli biele aj v svetlom režime (alebo tam chceš inú farbu, napr. čiernu) */
-body.light-mode .lbn .odsazena span[style*="color: blue"] {
-    color: var(--text-light) !important;
+/* IMPORTANT: do NOT restyle .uf-icon svg globally. Icons this extension did
+   not replace are the site's own layered sprites - a colored base glyph plus
+   a white overlay glyph, stacked via --uc-fill-inner - and their colors are
+   semantic (green pass, gold compulsory-elective, red fail). Forcing
+   fill:currentColor on those flattens every layer into one color and destroys
+   both the artwork and the meaning. Style only the icons we inject. */
+.uf-icon > .betterais-icon {
+  width: 85% !important;
+  height: 85% !important;
+}
+
+/* ...with ONE principled exception, which splits the two kinds of sprite
+   apart by a property the markup already encodes:
+
+   - a sprite that SETS --uc-fill-inner inline has a deliberate, meaningful
+     colour (green pass, gold elective, navy compulsory) -> untouched.
+   - a sprite that sets NO --uc-fill-inner is a neutral UI glyph (paginator
+     arrows, the refresh control, tree chevrons). Those fall back to a fixed
+     site default that ignores the theme entirely, so they stayed dark-on-dark
+     and invisible. There is nothing semantic to preserve, so let them follow
+     the surrounding text colour.
+
+   Matching on the absence of the custom property means this covers every
+   such icon at once, instead of patching them one page at a time. */
+html.dark-mode .uf-icon svg:not([style*="--uc-fill-inner"]),
+html.light-mode .uf-icon svg:not([style*="--uc-fill-inner"]) {
+  --uc-fill-inner: currentColor !important;
+  fill: currentColor !important;
+}
+
+/* Semantic icon tones (set as classes by icons.js, so each theme can tune
+   them independently rather than baking one hex into the markup). */
+.betterais-icon {
+  fill: currentColor !important;
+  stroke: none !important;
 }
 
 
-    fill: currentColor; /* Zabezpečí, že šípky budú mať farbu textu */
-    width: 16px !important;
-    height: 16px !important;
+/* Untoned icons (breadcrumb home / search / help) follow the theme's text
+   color. Set explicitly on the wrapper in BOTH themes rather than relying on
+   an inherit chain - the site's own cascade sets colors on svg elements and
+   would otherwise win, leaving these stuck at one appearance. */
+/* Untoned injected icons (breadcrumb home / search / help) follow the theme's
+   muted text color. Set on the wrapper explicitly in BOTH themes rather than
+   relying on an inherit chain, which the site's cascade would otherwise win. */
+html.dark-mode .uf-icon:has(> .betterais-icon:not([class*="betterais-icon-"])),
+html.light-mode .uf-icon:has(> .betterais-icon:not([class*="betterais-icon-"])) {
+  color: var(--mute) !important;
 }
 
-/* --- FINÁLNA OPRAVA PAGINÁTORA --- */
+html.dark-mode .betterais-icon:not([class*="betterais-icon-"]),
+html.light-mode .betterais-icon:not([class*="betterais-icon-"]) {
+  color: inherit !important;
+}
 
-/* 1. Zrušenie bieleho pozadia celého zoznamu */
+html.dark-mode a:hover .uf-icon > .betterais-icon,
+html.light-mode a:hover .uf-icon > .betterais-icon {
+  color: var(--link) !important;
+}
+
+html.dark-mode a:hover .uf-icon,
+html.light-mode a:hover .uf-icon,
+html.dark-mode .uf-icon:hover,
+html.light-mode .uf-icon:hover {
+  color: var(--link) !important;
+}
+
+.betterais-icon-info {
+  color: var(--tone-info) !important;
+}
+
+.betterais-icon-warn {
+  color: var(--tone-warn) !important;
+}
+
+.betterais-icon-danger {
+  color: var(--tone-danger) !important;
+}
+
+/* ==========================================================================
+   INNER APPLICATION PAGES (Portál študenta, e-index, katalóg, ...)
+   These use a different component set from the dashboard and were previously
+   unstyled, so they still rendered as raw 2005-era tables.
+   ========================================================================== */
+
+/* ---- body copy ---------------------------------------------------------- */
+
+/* the site hardcodes width:810px and text-align:justify on these, which
+   produces stretched word gaps and ignores the viewport */
+html.dark-mode .small,
+html.light-mode .small,
+html.dark-mode span.small,
+html.light-mode span.small,
+html.dark-mode div.small,
+html.light-mode div.small {
+  width: auto !important;
+  max-width: 78ch !important;
+  text-align: left !important;
+  font-size: 13.5px !important;
+  /* --ink-2, not --mute - this is real explanatory body copy people are
+     expected to actually read, not a caption/label */
+  color: var(--ink-2) !important;
+  line-height: 1.65;
+}
+
+html.dark-mode hr.uisseparator,
+html.light-mode hr.uisseparator,
+html.dark-mode hr,
+html.light-mode hr {
+  border: none !important;
+  height: 1px !important;
+  background: var(--line) !important;
+  margin: 22px 0 !important;
+}
+
+/* ---- portal tab strip ---------------------------------------------------
+   .portal_menu is a single-row <table> where each cell is a tab and the
+   active one is wrapped in <b>. Rebuilt as a real horizontal tab bar. */
+html.dark-mode table.portal_menu,
+html.light-mode table.portal_menu {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: none !important;
+  background: none !important;
+  margin: 0 0 20px 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  display: block;
+  /* NOT overflow-x:auto - per spec, when one axis is auto and the other is
+     visible, the visible one computes to auto too, which was adding a
+     stray vertical scrollbar to the tab strip. The tabs flex-wrap instead. */
+  overflow: visible;
+}
+
+table.portal_menu tbody,
+table.portal_menu tr {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 2px;
+  border: none !important;
+  background: none !important;
+}
+
+html.dark-mode table.portal_menu td.odsazena,
+html.light-mode table.portal_menu td.odsazena {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  white-space: nowrap;
+}
+
+html.dark-mode table.portal_menu td.odsazena a,
+html.light-mode table.portal_menu td.odsazena a {
+  position: relative;
+  display: block;
+  padding: 11px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--mute) !important;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: color .2s var(--ease), background-color .2s var(--ease);
+}
+
+/* the underline is a pseudo-element that scales out from the centre, so the
+   hover reads as a deliberate motion rather than an instant jump */
+table.portal_menu td.odsazena a::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--link);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .25s var(--ease-out);
+}
+
+/* tinted with the accent rather than --surface-2, which is nearly identical
+   to the white surface in light mode and read as "no hover at all" */
+html.dark-mode table.portal_menu td.odsazena a:hover,
+html.light-mode table.portal_menu td.odsazena a:hover {
+  color: var(--link) !important;
+  background: color-mix(in srgb, var(--link) 9%, transparent) !important;
+  text-decoration: none;
+}
+
+table.portal_menu td.odsazena a:hover::after {
+  transform: scaleX(.7);
+}
+
+/* the active tab is the one the site wrapped in <b> */
+html.dark-mode table.portal_menu td.odsazena b,
+html.light-mode table.portal_menu td.odsazena b {
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+html.dark-mode table.portal_menu td.odsazena b a,
+html.light-mode table.portal_menu td.odsazena b a {
+  color: var(--link) !important;
+  font-weight: 700;
+  background: none !important;
+}
+
+table.portal_menu td.odsazena b a::after,
+table.portal_menu td.odsazena b a:hover::after {
+  transform: scaleX(1);
+}
+
+/* ---- data tables --------------------------------------------------------
+   Scoped with :has() to tables that actually have a .zahlavi header row, so
+   the site's many layout-only tables are left alone. */
+html.dark-mode table:has(> thead > tr.zahlavi),
+html.light-mode table:has(> thead > tr.zahlavi) {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  margin: 0 0 20px 0 !important;
+  font-size: 13.5px;
+}
+
+/* ---- pasted / rich-text content containment ------------------------------
+   Notice bodies written by faculty staff are often pasted straight out of
+   Word, arriving as <pre> blocks, hardcoded table width attributes and inline
+   point-based font sizes. <pre> defaults to white-space:pre, which never
+   wraps, so those blocks ran far off the right edge of the page. */
+.mainpage pre {
+  white-space: pre-wrap !important;
+  word-break: break-word;
+  max-width: 100%;
+  font-family: var(--font-sans) !important;
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  margin: 0 0 10px 0;
+}
+
+/* the site hardcodes width="800" / width="980" on these wrappers */
+.mainpage table[width] {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.mainpage img,
+.mainpage iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* pasted markup carries inline pt sizes and Word colour styling; clamp the
+   sizing so it stays inside the page's own type scale */
+.mainpage [class^="Mso"],
+.mainpage [class*=" Mso"] {
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  margin: 0 0 8px 0 !important;
+}
+
+/* ---- headerless detail tables -------------------------------------------
+   Plenty of pages (miesta odovzdania, informácie o štúdiu, ...) render a
+   label/value detail block as a <table> with NO <thead class="zahlavi"> at
+   all - just <td><b>Label:</b></td><td>value</td> rows carrying hardcoded
+   width="160"/width="700" attributes. Every rule above keys off
+   > thead > tr.zahlavi, so none of them reached these and they rendered
+   completely raw - the "too cramped" look.
+
+   Matched here by structure: a table that contains a td.odsazena but has no
+   .zahlavi anywhere, and isn't one of the layout tables already handled
+   (rada-ikon wrappers, portal_menu tab strips).
+
+   Tables containing form controls are excluded as well. The legacy login
+   form at /navratka/login.pl lays its fields out as a table of
+   <td>label</td><td>input</td> rows, which matched this rule and got painted
+   as a label/value data block - that was the stray grey panel sitting behind
+   those fields. */
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena),
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  margin: 0 0 20px 0 !important;
+  font-size: 13.5px;
+}
+
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena {
+  /* the site's width="160"/width="700" attributes are what squeeze these
+     into a narrow column - override so the pair splits the full width */
+  width: auto !important;
+  padding: 12px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--ink-2) !important;
+  text-align: left !important;
+  vertical-align: top;
+}
+
+/* first cell is the label - give it a stable proportion and quieter tone */
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child {
+  width: 34% !important;
+  background: var(--surface-2) !important;
+  color: var(--mute) !important;
+}
+
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b {
+  color: var(--ink) !important;
+  font-weight: 600;
+}
+
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena {
+  border-bottom: none !important;
+}
+
+/* A table whose header is a single colspan cell (the credit/statistics
+   summary, "Prehľad so štatistickými údajmi...") is a compact label/value
+   list, not a data grid - stretching it to the full container width the
+   same as the grades table just leaves a dead white gap where the columns
+   never needed to reach. Size it to its content instead.
+
+   display:table!important stays here defensively: only tables with a
+   nowrap td get switched to display:block (see above), and this one
+   shouldn't have any, but forcing it back to display:table costs nothing
+   and guarantees table's real shrink-to-fit sizing regardless. */
+html.dark-mode table:has(> thead > tr.zahlavi > th[colspan]),
+html.light-mode table:has(> thead > tr.zahlavi > th[colspan]) {
+  display: table !important;
+  width: auto !important;
+  min-width: 340px;
+  max-width: 100%;
+}
+
+html.dark-mode table:has(> thead > tr.zahlavi > th[colspan]) td.odsazena:last-child,
+html.light-mode table:has(> thead > tr.zahlavi > th[colspan]) td.odsazena:last-child {
+  padding-left: 40px !important;
+  font-weight: 600;
+  color: var(--ink) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+html.dark-mode table:has(> thead > tr.zahlavi) th.zahlavi,
+html.light-mode table:has(> thead > tr.zahlavi) th.zahlavi {
+  background: var(--surface-2) !important;
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+  font-size: 12.5px;
+  text-align: left;
+  padding: 12px 14px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line-2) !important;
+  /* no white-space:nowrap here - headers are explicitly allowed to wrap
+     further down so columns can distribute across the full width */
+}
+
+html.dark-mode table:has(> thead > tr.zahlavi) td.odsazena,
+html.light-mode table:has(> thead > tr.zahlavi) td.odsazena {
+  padding: 11px 14px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--ink-2) !important;
+  vertical-align: middle;
+}
+
+html.dark-mode table:has(> thead > tr.zahlavi) tbody tr:last-child td.odsazena,
+html.light-mode table:has(> thead > tr.zahlavi) tbody tr:last-child td.odsazena {
+  border-bottom: none !important;
+}
+
+/* zebra striping - the site marks alternate rows with .sudy */
+html.dark-mode table:has(> thead > tr.zahlavi) tr.sudy,
+html.light-mode table:has(> thead > tr.zahlavi) tr.sudy {
+  background: var(--surface-2) !important;
+}
+
+html.dark-mode table:has(> thead > tr.zahlavi) tbody tr:hover,
+html.light-mode table:has(> thead > tr.zahlavi) tbody tr:hover,
+html.dark-mode tr.uis-hl-table:hover,
+html.light-mode tr.uis-hl-table:hover {
+  background: color-mix(in srgb, var(--link) 7%, var(--surface)) !important;
+}
+
+/* numeric columns line up */
+table:has(> thead > tr.zahlavi) td.odsazena[align="center"],
+table:has(> thead > tr.zahlavi) td.odsazena[nowrap] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The site hardcodes nowrap on cells and inline white-space:nowrap on every
+   header, which pins each column to its longest single line and is the other
+   half of why these tables never filled the row. Let them wrap - the column
+   widths then distribute across the full container instead. */
+html.dark-mode table:has(> thead > tr.zahlavi) th.zahlavi,
+html.light-mode table:has(> thead > tr.zahlavi) th.zahlavi,
+html.dark-mode table:has(> thead > tr.zahlavi) td.odsazena[nowrap],
+html.light-mode table:has(> thead > tr.zahlavi) td.odsazena[nowrap] {
+  white-space: normal !important;
+}
+
+/* the row-number column the site renders but hides is dead weight in the
+   layout - drop it so its width goes to real columns */
+table:has(> thead > tr.zahlavi) .UISTMNumberCellHidden {
+  display: none !important;
+}
+
+/* ---- app icon rows (rada-ikon) ------------------------------------------
+   A row of application shortcuts: icon above a caption.
+
+   These live inside a plain layout <table> with no width set, so the table
+   is shrink-to-fit. A grid with minmax()/auto-fill inside a shrink-to-fit
+   parent collapses to its minimum - one column - which is why the row
+   rendered vertically. Force the whole table chain to block-level full width
+   so the grid has real space to lay out horizontally. (This also stops the
+   page width jumping between tabs, since shrink-to-fit tables were sizing
+   the content column differently on every page.) */
+html.dark-mode table:has(.rada-ikon),
+html.light-mode table:has(.rada-ikon),
+html.dark-mode table:has(.rada-ikon) > tbody,
+html.light-mode table:has(.rada-ikon) > tbody,
+html.dark-mode table:has(.rada-ikon) > tbody > tr,
+html.light-mode table:has(.rada-ikon) > tbody > tr,
+html.dark-mode table:has(.rada-ikon) > tbody > tr > td.odsazena,
+html.light-mode table:has(.rada-ikon) > tbody > tr > td.odsazena,
+html.dark-mode table:has(.rada-ikon) > tbody > tr > td.odsazena > div,
+html.light-mode table:has(.rada-ikon) > tbody > tr > td.odsazena > div {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  box-sizing: border-box;
+}
+
+html.dark-mode .rada-ikon,
+html.light-mode .rada-ikon {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 8px;
+  width: 100% !important;
+  box-sizing: border-box;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  padding: 14px !important;
+  margin: 0 0 20px 0;
+}
+
+html.dark-mode a.app-ikona,
+html.light-mode a.app-ikona {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 14px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  text-align: center;
+  color: var(--ink-2) !important;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
+}
+
+html.dark-mode a.app-ikona:hover,
+html.light-mode a.app-ikona:hover {
+  background: var(--surface-2) !important;
+  border-color: var(--line) !important;
+  transform: translateY(-2px);
+  text-decoration: none !important;
+}
+
+.app-ikona .uf-icon {
+  flex: none;
+}
+
+/* These are the site's own layered sprite icons (each glyph layer painted
+   via --uc-fill-inner, set inline per-instance: navy, teal, orange, grey...)
+   which is why they read as an unrelated pile of random brand colors.
+   Unlike the grade-table status icons (green pass / gold elective / red
+   fail), the color here isn't semantic - it's arbitrary. Force every layer
+   to inherit .app-ikona's own ink-2 instead, so the icon set reads as one
+   unified accent-on-neutral system like everywhere else in the redesign.
+   Same technique already used for the section-card close/gear icons. */
+html.dark-mode .app-ikona .uf-icon svg,
+html.light-mode .app-ikona .uf-icon svg {
+  --uc-fill-inner: currentColor !important;
+  color: var(--ink-2) !important;
+}
+
+html.dark-mode a.app-ikona:hover .uf-icon svg,
+html.light-mode a.app-ikona:hover .uf-icon svg {
+  color: var(--link) !important;
+}
+
+html.dark-mode .app-ikona-text,
+html.light-mode .app-ikona-text {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: inherit !important;
+  text-wrap: balance;
+}
+
+html.dark-mode a.app-ikona:hover .app-ikona-text,
+html.light-mode a.app-ikona:hover .app-ikona-text {
+  color: var(--link) !important;
+}
+
+/* ---- legend -------------------------------------------------------------- */
+
+html.dark-mode .uisLegend,
+html.light-mode .uisLegend {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  padding: 14px 18px !important;
+  margin: 0 0 20px 0;
+}
+
+html.dark-mode .uisLegendTitle a,
+html.light-mode .uisLegendTitle a {
+  font-weight: 700;
+  color: var(--ink) !important;
+  font-size: 13.5px;
+}
+
+html.dark-mode .uisLegendContent,
+html.light-mode .uisLegendContent {
+  color: var(--mute) !important;
+  font-size: 13px;
+  padding-top: 10px;
+}
+
+.uisLegendContent table,
+.uisLegendContent td.odsazena {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* ---- inline info/error banners (sitewide, not just login) ---------------- */
+
+html.dark-mode .uis_msg,
+html.light-mode .uis_msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px !important;
+  margin: 0 0 20px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  background: var(--surface) !important;
+  color: var(--ink-2) !important;
+  border: 1px solid var(--line) !important;
+  border-left: 3px solid var(--tone-info) !important;
+  border-radius: var(--radius) !important;
+}
+
+html.dark-mode .uis_msg.ko,
+html.light-mode .uis_msg.ko,
+html.dark-mode .uis_msg.error,
+html.light-mode .uis_msg.error {
+  border-left-color: var(--tone-danger) !important;
+}
+
+html.dark-mode .uis_msg.warning,
+html.light-mode .uis_msg.warning {
+  border-left-color: var(--tone-warn) !important;
+}
+
+.uis_msg .uf-icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ---- form controls ------------------------------------------------------- */
+
+html.dark-mode select,
+html.light-mode select {
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line-2) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 7px 10px !important;
+  font: 500 13px/1.2 var(--font-sans) !important;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+html.dark-mode select:focus,
+html.light-mode select:focus {
+  outline: none;
+  border-color: var(--link) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 20%, transparent);
+}
+
+/* the site's tables often wrap content in .flex-container for icon+text */
+.flex-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---- paginator ----------------------------------------------------------- */
+
 ul.paginator {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  width: fit-content;
 }
 
-/* 2. Prefarbenie každého políčka na tmavo sivú */
-ul.paginator li {
-    background-color: var(--zasadka-dark) !important;
-    border: 1px solid #333 !important; /* Jemný predel medzi tlačidlami */
-    margin: 0 !important;
+html.dark-mode ul.paginator li,
+html.light-mode ul.paginator li {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 4px;
+  margin: 0 !important;
+  overflow: hidden;
 }
 
-/* 3. Vynútenie farby textu pre všetky odkazy a divy vnútri */
-ul.paginator li a, 
-ul.paginator li div,
-ul.paginator li a span {
-    color: var(--text-dark) !important;
-    border: none !important;
+html.dark-mode ul.paginator li a,
+html.dark-mode ul.paginator li div,
+html.dark-mode ul.paginator li a span,
+html.light-mode ul.paginator li a,
+html.light-mode ul.paginator li div,
+html.light-mode ul.paginator li a span {
+  color: var(--mute) !important;
+  border: none !important;
+  border-radius: 4px;
+  transition: color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
 }
 
-ul.paginator li a[data-selected="true"],
-ul.paginator li a[data-active="true"] {
-    background-color: var(--link) !important; 
+html.dark-mode ul.paginator li a,
+html.light-mode ul.paginator li a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
-ul.paginator li a[data-selected="true"] span,
-ul.paginator li a[data-active="true"] svg {
-    color: #000 !important;
-    fill: #000 !important;
+html.dark-mode ul.paginator li a:hover,
+html.light-mode ul.paginator li a:hover {
+  background-color: color-mix(in srgb, var(--link) 10%, transparent) !important;
+  color: var(--link) !important;
+  text-decoration: none;
 }
 
-ul.paginator li a[data-active="false"] {
-    opacity: 0.5;
-    background-color: var(--zasadka-dark) !important;
+/* Only the CURRENT page gets a solid fill. data-active="true" merely means a
+   nav arrow is enabled - filling those solid too made a row of heavy maroon
+   blocks that fought the page for attention. */
+/* the colour goes on the <a> itself, NOT on a descendant span - the page
+   items are bare text nodes ("<a data-selected='true'> 1-10 </a>"), only the
+   arrow items wrap their content in a span, so a span-only rule matched
+   nothing here and the generic --mute colour kept winning */
+html.dark-mode ul.paginator li a[data-selected="true"],
+html.light-mode ul.paginator li a[data-selected="true"] {
+  background-color: var(--link) !important;
+  color: #fff !important;
+  font-weight: 700;
 }
 
-
-body.light-mode ul.paginator li {
-    background-color: var(--zasadka-light) !important;
-    border: 1px solid #333 !important; /* Jemný predel medzi tlačidlami */
-    margin: 0 !important;
+html.dark-mode ul.paginator li a[data-selected="true"] span,
+html.light-mode ul.paginator li a[data-selected="true"] span {
+  color: #fff !important;
 }
 
-body.light-mode ul.paginator li a[data-active="false"] {
-    opacity: 0.5;
-    background-color: var(--zasadka-light) !important;
+/* enabled arrows: quiet by default, accent only on hover */
+html.dark-mode ul.paginator li a[data-active="true"],
+html.light-mode ul.paginator li a[data-active="true"] {
+  background-color: transparent !important;
+  color: var(--mute) !important;
 }
 
-body.light-mode ul.paginator li a, 
-body.light-mode ul.paginator li div,
-body.light-mode ul.paginator li a span {
-    color: var(--text-light) !important;
-    border: none !important;
-}
-/* Pridanie bieleho obrysu pre ikony v tmavom režime */
-body.dark-mode .uf-icon svg {
-    stroke: var(--link) !important; /* Farba obrysu */
-    stroke-width: 1px !important; /* Hrúbka obrysu */
-    paint-order: stroke fill !important; /* Zabezpečí, že obrys bude pod výplňou a nezmenší ikonu */
-    filter: drop-shadow(0 0 1px var(--link)) !important; /* Voliteľné: pridá jemnú žiaru pre lepší kontrast */
+/* colour is handled by the general "sprite with no --uc-fill-inner follows
+   the theme" rule further up - only sizing is paginator-specific */
+html.dark-mode ul.paginator .uf-icon svg,
+html.light-mode ul.paginator .uf-icon svg {
+  color: inherit !important;
+  width: 15px;
+  height: 15px;
 }
 
-/* Ak chceš ikonu úplne vybieliť (ako sme písali predtým), nechaj aj toto: */
-body.dark-mode .uf-icon svg,
-body.dark-mode .uf-icon svg use {
-    fill: #ffffff !important;
+html.dark-mode ul.paginator li a[data-active="true"]:hover,
+html.light-mode ul.paginator li a[data-active="true"]:hover {
+  color: var(--link) !important;
+  background-color: color-mix(in srgb, var(--link) 10%, transparent) !important;
+}
+
+html.dark-mode ul.paginator li a[data-active="false"],
+html.light-mode ul.paginator li a[data-active="false"] {
+  opacity: .35;
+  background-color: transparent !important;
+  pointer-events: none;
+}
+
+/* ---- server stats footer + section-card utility icons ------------------ */
+
+html.dark-mode .operinfo,
+html.light-mode .operinfo {
+  background: var(--surface) !important;
+  color: var(--mute) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  line-height: 1.7;
+  box-shadow: none;
+}
+
+.operinfo b {
+  color: var(--ink) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the site hardcodes --uc-fill-inner:#EEE / #231F20 inline on these small
+   close/gear/expand-collapse icons, tuned for the original light banner -
+   #231F20 (near black) is invisible on our dark cards, so override both to
+   just follow the muted text color in either theme */
+.menusectionclose svg,
+.menusectionsetup svg,
+.sekce-drive svg {
+  --uc-fill-inner: var(--mute) !important;
+}
+
+.menusectionclose:hover svg,
+.menusectionsetup:hover svg,
+.sekce-drive a:hover svg {
+  --uc-fill-inner: var(--ink) !important;
 }

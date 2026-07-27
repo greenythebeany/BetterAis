@@ -1,20 +1,26 @@
 {
   "manifest_version": 3,
   "name": "BetterAis",
-  "version": "1.1",
-  "description": "Enhance your STU IS (is.stuba.sk) experience: 🌙 Toggle dark/light themes instantly, 🎨 customize colors from predefined palettes, 💾 save your preferences automatically, and ⚡ access all options quickly via the popup.",
+  "version": "3.0",
+  "description": "Modern redesign of STU AIS (is.stuba.sk): light and dark themes, unified icons, cleaner tables, and a custom accent color.",
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting"
+    "activeTab"
   ],
   "host_permissions": [
     "*://is.stuba.sk/*"
   ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
@@ -25,12 +31,25 @@
         "*://is.stuba.sk/*"
       ],
       "js": [
-        "content.js"
+        "content.js",
+        "icons.js"
       ],
       "css": [
         "style.css"
       ],
-      "run_at": "document_end"
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "*://is.stuba.sk/auth/*",
+        "*://is.stuba.sk/system/login.pl*"
+      ],
+      "css": [
+        "login.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
     }
   ]
 }

@@ -1,0 +1,257 @@
+/* ==========================================================================
+   BetterAis - login page rebuild (/auth/ and /system/login.pl - same markup).
+   Loaded in addition to style.css, scoped by manifest.json to those two paths.
+   Same "flat modern intranet" direction as style.css: real borders, tight
+   radii, flat surfaces (var(--surface)) instead of shadows.
+
+   IMPORTANT: the site's own stylesheets (base.css / local.css) stay enabled.
+   They aren't purely decorative - things like which two-factor fields are
+   visible are driven by CSS rules keyed to data-attributes (e.g.
+   [data-two-factor-type="no"]), and icon sizing/positioning (.uf-icon svg)
+   is computed from CSS custom properties they define. Disabling them breaks
+   that logic. So instead of stripping the stylesheets, every visual property
+   on every login-page component is explicitly overridden here - the result
+   looks fully custom without touching functional/structural rules.
+   Icons (.uf-icon and its svg layers) are intentionally left untouched.
+   ========================================================================== */
+
+html.dark-mode body,
+html.light-mode body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 4vw, 28px);
+  padding: clamp(20px, 5vw, 40px) 16px;
+  min-height: 100vh;
+}
+
+/* ---- header --------------------------------------------------------- */
+
+html.dark-mode #hlavicka,
+html.light-mode #hlavicka {
+  align-self: flex-start;
+  width: 100%;
+  max-width: none;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  position: static;
+}
+
+html.dark-mode #ie1,
+html.light-mode #ie1 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 12px;
+  width: 100%;
+  /* logo sizing/visibility for #ie1 is handled sitewide in style.css
+     (dark: shown + sized via background-image, light: hidden) - don't
+     fight it here, just make sure this row has room for it */
+  min-height: 80px;
+}
+
+html.dark-mode #svatek,
+html.light-mode #svatek {
+  color: var(--mute) !important;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+#vlajky a {
+  margin-left: 8px;
+  opacity: .75;
+}
+
+html.dark-mode #univerzita,
+html.light-mode #univerzita {
+  font-size: clamp(19px, 4vw, 23px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.01em;
+  margin: 2px 0 0 !important;
+  color: var(--ink) !important;
+  padding-left: 25px;
+}
+
+#hlavicka > a,
+#hlavicka div > a {
+  font-size: 11px !important;
+  font-family: var(--font-mono);
+  letter-spacing: .02em;
+  color: var(--mute) !important;
+  margin-right: 10px;
+}
+
+/* ---- breadcrumb: quiet inline text, no pill/box ----------------------- */
+
+html.dark-mode [aria-label="breadcrumb"],
+html.light-mode [aria-label="breadcrumb"] {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 13px;
+  color: var(--mute) !important;
+  flex-wrap: wrap;
+}
+
+[aria-label="breadcrumb"] a {
+  color: var(--mute) !important;
+}
+
+[aria-label="breadcrumb"] a:hover {
+  color: var(--ink) !important;
+}
+
+/* on the login page only, #titulek just repeats the breadcrumb title -
+   sitewide it holds real page headings and controls, so it stays visible
+   everywhere else (see style.css) */
+.helpinbreadcrumbs,
+#titulek {
+  display: none !important;
+}
+
+/* ---- info / error / warning banner ------------------------------------ */
+
+html.dark-mode .uis_msg,
+html.light-mode .uis_msg {
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none;
+}
+
+.uis_msg.info a {
+  color: var(--link) !important;
+  font-weight: 600;
+}
+
+.uis_msg.error,
+.uis_msg.crit {
+  color: #e5484d !important;
+}
+
+.uis_msg.warning {
+  color: #f5a524 !important;
+}
+
+/* ---- login card --------------------------------------------------------- */
+
+html.dark-mode .highlightbox,
+html.light-mode .highlightbox {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 32px);
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none;
+}
+
+.loginform-section {
+  padding: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+html.dark-mode .login-input-label,
+html.light-mode .login-input-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: var(--font-mono);
+  letter-spacing: .02em;
+  color: var(--mute) !important;
+  margin-bottom: 8px;
+  text-transform: none;
+}
+
+html.dark-mode .highlightbox input[type="text"],
+html.dark-mode .highlightbox input[type="password"],
+html.light-mode .highlightbox input[type="text"],
+html.light-mode .highlightbox input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin: 4px 0 16px;
+  border: 1px solid var(--line-2) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+html.dark-mode .highlightbox input[type="text"]:focus,
+html.dark-mode .highlightbox input[type="password"]:focus,
+html.light-mode .highlightbox input[type="text"]:focus,
+html.light-mode .highlightbox input[type="password"]:focus {
+  border-color: var(--link) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 20%, transparent);
+}
+
+html.dark-mode #login-btn,
+html.light-mode #login-btn {
+  width: 100%;
+  margin-top: 10px !important;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm) !important;
+  cursor: pointer;
+  background: var(--link) !important;
+  color: #fff !important;
+  font: 700 14px/1 var(--font-sans);
+  box-shadow: none;
+  transition: filter .12s ease;
+}
+
+#login-btn:hover {
+  filter: brightness(1.08);
+}
+
+#login-btn:active {
+  filter: brightness(.94);
+}
+
+/* ---- footer links box ---------------------------------------------------- */
+
+html.dark-mode .loginform_infobox,
+html.light-mode .loginform_infobox {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+  font-size: 13px;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none;
+}
+
+.loginform_infobox a {
+  color: var(--ink) !important;
+  font-weight: 500;
+}
+
+.loginform_infobox a:hover {
+  color: var(--link) !important;
+}
