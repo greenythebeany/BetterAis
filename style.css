@@ -1808,10 +1808,28 @@ html.light-mode table:has(> thead > tr.zahlavi) {
   margin: 0 0 10px 0;
 }
 
-/* the site hardcodes width="800" / width="980" on these wrappers */
-.mainpage table[width] {
+/* The site hardcodes width="800" / width="980" on these wrappers. Setting
+   width:100% alone is NOT enough: with the default table-layout:auto a table
+   still grows past its stated width whenever its content's minimum intrinsic
+   width is larger, which is exactly what long pasted notices did - the table
+   overflowed the page container instead of wrapping inside it.
+   table-layout:fixed makes the declared width authoritative regardless of
+   content. */
+.mainpage table[width],
+.mainpage table.zasadky-info,
+.mainpage table.zasadky-crit {
   width: 100% !important;
   max-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* with a fixed layout the cells must be allowed to break long unbroken
+   content (URLs, Word's run-on spans) instead of forcing the column wider */
+.mainpage table[width] td,
+.mainpage table.zasadky-info td,
+.mainpage table.zasadky-crit td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .mainpage img,
