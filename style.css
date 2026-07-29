@@ -1640,6 +1640,7 @@ html.light-mode .uf-icon:hover {
 
 .betterais-icon-warn {
   color: var(--tone-warn) !important;
+  margin-right: 100px !important;
 }
 
 .betterais-icon-danger {
