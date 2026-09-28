@@ -485,7 +485,7 @@ html.light-mode table:has(> thead > tr.zahlavi) {
 
 html.dark-mode [aria-label="breadcrumb"],
 html.light-mode [aria-label="breadcrumb"] {
-  margin: 20px 0 32px 0 !important;
+  margin: 20px 0 40px 0 !important;
   border-radius: var(--radius-sm) !important;
   height: fit-content !important;
   width: 100% !important;
@@ -814,6 +814,79 @@ html.light-mode .polozky-obr {
   stroke: none !important;
 }
 
+/* Public homepage / návratka menu ("Osobná administratíva", "Prijímacie
+   konanie", ...) - the same content as the dashboard's #menitko card grid
+   (icon + section title + bullet-linked pages), but shipped as a plain
+   <table> of icon | spacer | content rows instead of the .polozky-obal
+   card markup, so none of that card styling ever reached it and it's been
+   rendering as a raw, unstyled table. Rebuilt into the same visual
+   language: one section = one row (icon badge, vertically centred, next to
+   a title + link list), separated by a hairline instead of the site's own
+   empty spacer row.
+
+   Structural selectors throughout (":has(> td > .polozky-obr)" etc) instead
+   of a class, since the site gives this table none of its own - scoped
+   narrowly enough that the dashboard's card version (.polozky-obal
+   > .polozky-obr, never inside a <table>) is never touched. */
+table:has(> tbody > tr > td > .polozky-obr) {
+  border-collapse: collapse !important;
+}
+
+/* icon badge: centred in its row instead of pinned to the top (valign=top
+   in the source), and given its own right margin now that the spacer cell
+   next to it (site markup: a <td> holding just "&nbsp;&nbsp;") is hidden
+   below rather than relied on for the gap. */
+table td.odsazena > .polozky-obr {
+  margin: 0 20px 0 0 !important;
+}
+
+table tr:has(> td > .polozky-obr) > td.odsazena:first-child {
+  vertical-align: middle !important;
+  padding: 0 !important;
+}
+
+table tr:has(> td > .polozky-obr) > td.odsazena:nth-child(2) {
+  display: none !important;
+}
+
+/* content cell: real vertical padding replaces the site's double <br><br>
+   under the heading (collapsed below) and the empty spacer row (hidden
+   below) as what actually separates one section from the next. */
+table tr:has(> td > .polozky-obr) > td.odsazena:last-child {
+  padding: 20px 0 !important;
+}
+
+table tr:has(> td > .polozky-obr) > td.odsazena .sekce-nadpis {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+table tr:has(> td > .polozky-obr) > td.odsazena .sekce-nadpis + br,
+table tr:has(> td > .polozky-obr) > td.odsazena .sekce-nadpis + br + br {
+  display: none;
+}
+
+/* hairline between sections instead of the site's empty <tr><td>&nbsp;</td>
+   spacer row (hidden below) - :last-of-type drops the trailing line after
+   the final section. */
+html.dark-mode table tr:has(> td > .polozky-obr) > td.odsazena,
+html.light-mode table tr:has(> td > .polozky-obr) > td.odsazena {
+  border-bottom: 1px solid var(--line) !important;
+}
+
+table tr:has(> td > .polozky-obr):last-of-type > td.odsazena {
+  border-bottom: none !important;
+}
+
+/* the site's own spacer row: a lone <tr> whose only cell just holds
+   "&nbsp;" - real content rows in this table always have either a
+   .polozky-obr icon or a .sekce-nadpis heading, so a row with neither is
+   unambiguously one of these. */
+table:has(.polozky-obr) tr:not(:has(.polozky-obr)):not(:has(.sekce-nadpis)) {
+  display: none !important;
+}
+
 /* ---- collapsed sections (#closed-sections) --------------------------------
    Each is a bare <div><a><svg></a><br><a>Label</a></div> with zero styling
    of its own - icon badge to match the expanded cards instead of a raw
@@ -1013,16 +1086,61 @@ html.light-mode .sekce-nadpis {
   max-width: 100% !important;
 }
 
+/* the container the site renders all these notice cards into - a plain
+   vertical stack by default. Card heights vary wildly (one can be a single
+   line, another a 7-item list) - a grid's row height is set by the tallest
+   card IN that row, which left short neighbours stranded with a lot of dead
+   air beside them instead of the next card packing in underneath. CSS
+   multicol actually packs by real content height instead of row-locking,
+   which is what "no dead gaps" needs here.
+   Multicol's one cost: it lays cards out in DOM order and ignores the
+   inline "order" style the site uses to put critical notices first - so
+   icons.js physically reorders the cards to match before this ever
+   paints (see reorderZasadky there), and nothing here needs to read
+   "order" itself. */
+.zasadky-container {
+  columns: 3 !important;
+  column-gap: 16px !important;
+}
+
+.zasadky-container > .zasadka {
+  break-inside: avoid;
+  margin: 0 0 16px !important;
+}
+
+/* Výveska carries its own multi-column grid of posts (see .zasadka.vyveska
+   ul below) - confining it to one column left it only ~1/3 of the row's
+   width, which crushed that inner grid down to a single narrow column of
+   its own. Span the full width instead so its posts keep their own
+   side-by-side layout. */
+.zasadky-container > .zasadka.vyveska {
+  column-span: all !important;
+}
+
+@media (max-width: 900px) {
+  .zasadky-container {
+    columns: 2 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .zasadky-container {
+    columns: 1 !important;
+  }
+}
+
 /* notice/alert cards ("MTF TRNAVA - Termín zápisov...", the credit top-up
    notice, etc.) - same flat bordered surface as the section cards */
 html.dark-mode .zasadka,
 html.dark-mode .zasadky-crit,
 html.dark-mode .zasadky-info,
+html.dark-mode .zasadky-warning,
 html.dark-mode .odsazena,
 html.dark-mode .zahlavi,
 html.light-mode .zasadka,
 html.light-mode .zasadky-crit,
 html.light-mode .zasadky-info,
+html.light-mode .zasadky-warning,
 html.light-mode .odsazena,
 html.light-mode .zahlavi {
   background: var(--surface) !important;
@@ -1036,7 +1154,8 @@ html.light-mode .zasadka {
 
 .zasadka,
 .zasadky-crit,
-.zasadky-info {
+.zasadky-info,
+.zasadky-warning {
   /* no max-width: a 560px cap squeezed long staff notices into a narrow
      column on a wide page. Width comes from the page container instead. */
   max-width: 100%;
@@ -1118,7 +1237,8 @@ html.light-mode .zasadka a:hover {
 }
 
 .zasadky-info .odsazena,
-.zasadky-crit .odsazena {
+.zasadky-crit .odsazena,
+.zasadky-warning .odsazena {
   border-radius: var(--radius);
 }
 
@@ -1129,7 +1249,8 @@ html.light-mode .zasadka a:hover {
    with the first line of multi-line notices, with lopsided padding to
    match - that's what was making it sit high and left.) */
 .zasadky-info > tbody > tr > td.odsazena:first-child,
-.zasadky-crit > tbody > tr > td.odsazena:first-child {
+.zasadky-crit > tbody > tr > td.odsazena:first-child,
+.zasadky-warning > tbody > tr > td.odsazena:first-child {
   vertical-align: middle !important;
   text-align: center !important;
   padding: 10px 14px !important;
@@ -1138,7 +1259,8 @@ html.light-mode .zasadka a:hover {
 }
 
 .zasadky-info > tbody > tr > td.odsazena:first-child svg,
-.zasadky-crit > tbody > tr > td.odsazena:first-child svg {
+.zasadky-crit > tbody > tr > td.odsazena:first-child svg,
+.zasadky-warning > tbody > tr > td.odsazena:first-child svg {
   display: block;
   margin: 0 auto;
   /* !important is required here: icons.js writes width/height inline on
@@ -1161,6 +1283,105 @@ html.light-mode .zasadka a:hover {
 html.dark-mode .odsazena.active,
 html.light-mode .odsazena.active {
   background-color: var(--bg) !important;
+}
+
+/* the info icon on the Výveska card itself (not the per-post remove icons
+   below) - the card's own title ("Výveska") already says what it is, so the
+   icon column is dropped entirely rather than just re-themed. Getting the
+   remaining cell to actually claim the freed-up width turned out to need
+   more than just hiding the icon cell: table-layout:fixed locks column
+   widths to what the (now-hidden) icon column set, and doesn't redistribute
+   that space to its sibling - even display:block on just that one cell
+   left it sized by leftover table auto-width logic rather than its actual
+   container. Taking the whole table out of table layout - table, tbody,
+   every row and cell all forced to block - sidesteps that entirely; each
+   becomes a plain full-width block box, which is what finally lets the
+   post grid below stretch across the real card width. */
+.zasadka.vyveska table.zasadky-info,
+.zasadka.vyveska table.zasadky-info > tbody,
+.zasadka.vyveska table.zasadky-info > tbody > tr,
+.zasadka.vyveska table.zasadky-info > tbody > tr > td {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Scoped to tr:first-child so the "ďalší" (more) row's cell, which is also
+   a first-child of its own row, is untouched. */
+.zasadka.vyveska table.zasadky-info > tbody > tr:first-child > td.odsazena:first-child {
+  display: none !important;
+}
+
+/* ---- Výveska (bulletin board) list -------------------------------------
+   The site ships this as a bare <ul>: each post is a raw "::" text node,
+   a title link, a category <div>, and a remove-icon <span> all sitting on
+   one line with nothing to stop them wrapping over each other on longer
+   titles - that's the overlap. Lay it out as a responsive card grid
+   instead, one card per post, with the remove icon pinned to a corner so
+   it never collides with wrapped text. */
+.zasadka.vyveska ul {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+  gap: 10px !important;
+  margin: 6px 0 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.zasadka.vyveska ul > li {
+  position: relative;
+  /* same "::" prefix trick as .toast below: collapse the raw text node to
+     zero, then restore size on the real element children only. */
+  font-size: 0;
+  margin: 0 !important;
+  padding: 10px 34px 10px 12px !important;
+  border-radius: calc(var(--radius) - 4px);
+}
+
+html.dark-mode .zasadka.vyveska ul > li,
+html.light-mode .zasadka.vyveska ul > li {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--line);
+}
+
+.zasadka.vyveska ul > li > * {
+  font-size: 13px;
+}
+
+/* the title is <b><a>...</a></b> on some posts but a bare <a> (no <b>) on
+   others - both need the same block treatment, or the bare ones stay
+   inline right after the invisible "::" text node and never show. */
+.zasadka.vyveska ul > li b,
+.zasadka.vyveska ul > li > a:first-child {
+  display: block;
+  font-size: 13.5px !important;
+  line-height: 1.4;
+}
+
+.zasadka.vyveska ul > li > div {
+  margin-top: 6px;
+  font-size: 12px !important;
+}
+
+html.dark-mode .zasadka.vyveska ul > li > div,
+html.light-mode .zasadka.vyveska ul > li > div {
+  color: var(--mute-2) !important;
+}
+
+.zasadka.vyveska ul > li > div a {
+  font-size: 12px !important;
+}
+
+.zasadka.vyveska .vyveska_hide_item {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 13px;
+}
+
+/* "ďalší" (more) link - right-aligned below the grid, not glued to the
+   last card. */
+.zasadky-dalsi {
+  margin-top: 8px;
 }
 
 html.dark-mode #menitko #vsechny-polozky > .polozky-obal,
@@ -1640,7 +1861,6 @@ html.light-mode .uf-icon:hover {
 
 .betterais-icon-warn {
   color: var(--tone-warn) !important;
-  margin-right: 100px !important;
 }
 
 .betterais-icon-danger {
@@ -1695,27 +1915,75 @@ html.light-mode table.portal_menu {
   margin: 0 0 20px 0 !important;
   border-bottom: 1px solid var(--line) !important;
   display: block;
-  /* NOT overflow-x:auto - per spec, when one axis is auto and the other is
-     visible, the visible one computes to auto too, which was adding a
-     stray vertical scrollbar to the tab strip. The tabs flex-wrap instead. */
-  overflow: visible;
+  /* the site's own base.css absolutely-positions this against its old
+     fixed-height layout, same as #svatek/#vlajky/#ais in the header (see
+     there for the full story) - it was never given the same static
+     override. Harmless on a page with one .portal_menu, but a page with
+     two of these stacked back to back (e.g. Portál študenta: the app-level
+     tab row, then a second .portal_menu for the report sub-view right
+     below it) had both absolutely positioned at the same computed offset,
+     so the second one's tabs rendered directly on top of the first one's
+     wrapped last tab instead of below it. */
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  /* base.css sizes this for its old single-line assumption - a fixed height
+     doesn't stop overflowing content from rendering, but it DOES mean
+     whatever comes after this table gets positioned right after that short
+     declared height rather than the content's real height. */
+  height: auto !important;
+  min-height: 0 !important;
 }
 
+/* All tabs stay one group on one line - wrapping the tab that doesn't fit
+   onto its own line made it read as an unrelated second row, especially
+   with a second .portal_menu stacked right below (its tabs and the wrapped
+   one landed close enough to look like the same group). Scroll horizontally
+   instead. overflow-x:auto alone isn't enough here: per spec, when one axis
+   is auto and the other is visible, the visible one computes to auto too -
+   which was adding a stray vertical scrollbar. Setting overflow-y:hidden
+   explicitly (not the default visible) sidesteps that. */
 table.portal_menu tbody,
 table.portal_menu tr {
   display: flex !important;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
+  justify-content: space-between;
   gap: 2px;
   border: none !important;
   background: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-html.dark-mode table.portal_menu td.odsazena,
-html.light-mode table.portal_menu td.odsazena {
+/* legacy spacer cells from the old table layout, one between every tab -
+   redundant now that the flex row above spaces tabs with gap/justify-content
+   itself, and left as empty flex items they'd throw off that even
+   distribution (space-between treats them as real items to leave gaps
+   around, not as decoration). */
+table.portal_menu td.portal_menu_hole {
+  display: none !important;
+}
+
+html.dark-mode table.portal_menu td,
+html.light-mode table.portal_menu td {
   background: none !important;
   border: none !important;
   padding: 0 !important;
   white-space: nowrap;
+  /* base.css sets margin/position/radius on generic table cells site-wide -
+     normally inert, since margin does nothing on display:table-cell. Forcing
+     the <tr> above to display:flex blockifies its <td> children (they stop
+     being table-cells and become plain block-level flex items), which wakes
+     those dormant properties up for real. The result: a stray ~13px top
+     margin on cells that wrap to a second flex line, right where the next
+     .portal_menu table starts - which is what put a second table's first
+     tab on top of a wrapped tab from the one above it. position:relative
+     doing the same when nothing here needs to establish an offset context. */
+  margin: 0 !important;
+  position: static !important;
 }
 
 html.dark-mode table.portal_menu td.odsazena a,
@@ -1818,7 +2086,8 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    content. */
 .mainpage table[width],
 .mainpage table.zasadky-info,
-.mainpage table.zasadky-crit {
+.mainpage table.zasadky-crit,
+.mainpage table.zasadky-warning {
   width: 100% !important;
   max-width: 100% !important;
   table-layout: fixed !important;
@@ -1828,9 +2097,24 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    content (URLs, Word's run-on spans) instead of forcing the column wider */
 .mainpage table[width] td,
 .mainpage table.zasadky-info td,
-.mainpage table.zasadky-crit td {
+.mainpage table.zasadky-crit td,
+.mainpage table.zasadky-warning td {
   word-break: break-word;
   overflow-wrap: anywhere;
+}
+
+/* table-layout:fixed (above) makes column widths authoritative instead of
+   content-based - so the icon column's "width: 1%" (a shrink-to-content
+   trick that only works under the default auto layout) gets taken
+   literally, collapsing that column to a few px. The 64px icon (forced via
+   !important, see below) then has nowhere to go but overflow straight over
+   the notice text next to it - the overlap on every notice card here, not
+   just one. Give it its real footprint (icon + both sides of padding)
+   instead so the column actually reserves room for it. */
+.mainpage table.zasadky-info > tbody > tr > td.odsazena:first-child,
+.mainpage table.zasadky-crit > tbody > tr > td.odsazena:first-child,
+.mainpage table.zasadky-warning > tbody > tr > td.odsazena:first-child {
+  width: 92px !important;
 }
 
 .mainpage img,
@@ -1846,17 +2130,21 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    backgrounds, and randomly centred/justified paragraphs. Neutralise the lot
    inside notice bodies and let the page's own type system apply.
 
-   scoped to .zasadky-info / .zasadky-crit / .uis_msg so genuine site content
-   elsewhere is untouched. */
+   scoped to .zasadky-info / .zasadky-crit / .zasadky-warning / .uis_msg so
+   genuine site content elsewhere is untouched. */
 .zasadky-info [style],
 .zasadky-crit [style],
+.zasadky-warning [style],
 .uis_msg [style],
 .zasadky-info [class^="Mso"],
 .zasadky-crit [class^="Mso"],
+.zasadky-warning [class^="Mso"],
 .zasadky-info [class*=" Mso"],
 .zasadky-crit [class*=" Mso"],
+.zasadky-warning [class*=" Mso"],
 .zasadky-info .y2iqfc,
-.zasadky-crit .y2iqfc {
+.zasadky-crit .y2iqfc,
+.zasadky-warning .y2iqfc {
   font-family: var(--font-sans) !important;
   font-size: 13.5px !important;
   line-height: 1.65 !important;
@@ -1870,46 +2158,57 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    warning tone (deadlines, cautions), everything else becomes body ink. */
 .zasadky-info [style*="color:red"],
 .zasadky-crit [style*="color:red"],
+.zasadky-warning [style*="color:red"],
 .zasadky-info [style*="color: red"],
-.zasadky-crit [style*="color: red"] {
+.zasadky-crit [style*="color: red"],
+.zasadky-warning [style*="color: red"] {
   color: var(--tone-warn) !important;
 }
 
 .zasadky-info [style*="color:black"],
 .zasadky-crit [style*="color:black"],
+.zasadky-warning [style*="color:black"],
 .zasadky-info [style*="color: black"],
 .zasadky-crit [style*="color: black"],
+.zasadky-warning [style*="color: black"],
 .zasadky-info [style*="color:#202124"],
 .zasadky-crit [style*="color:#202124"],
+.zasadky-warning [style*="color:#202124"],
 .zasadky-info [style*="rgb(32, 33, 36)"],
-.zasadky-crit [style*="rgb(32, 33, 36)"] {
+.zasadky-crit [style*="rgb(32, 33, 36)"],
+.zasadky-warning [style*="rgb(32, 33, 36)"] {
   color: var(--ink-2) !important;
 }
 
 /* the notice body is one long <li> - drop the marker and its indent */
 .zasadky-info ul,
 .zasadky-crit ul,
+.zasadky-warning ul,
 .zasadky-info ol,
-.zasadky-crit ol {
+.zasadky-crit ol,
+.zasadky-warning ol {
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
 .zasadky-info li,
-.zasadky-crit li {
+.zasadky-crit li,
+.zasadky-warning li {
   background: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
 .zasadky-info p,
-.zasadky-crit p {
+.zasadky-crit p,
+.zasadky-warning p {
   margin: 0 0 10px 0 !important;
 }
 
 .zasadky-info pre,
-.zasadky-crit pre {
+.zasadky-crit pre,
+.zasadky-warning pre {
   background: none !important;
   padding: 0 !important;
   border: none !important;
@@ -1932,8 +2231,8 @@ html.light-mode table:has(> thead > tr.zahlavi) {
    <td>label</td><td>input</td> rows, which matched this rule and got painted
    as a label/value data block - that was the stray grey panel sitting behind
    those fields. */
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena),
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena),
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) {
   width: 100% !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
@@ -1945,8 +2244,8 @@ html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.
   font-size: 13.5px;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena {
   /* the site's width="160"/width="700" attributes are what squeeze these
      into a narrow column - override so the pair splits the full width */
   width: auto !important;
@@ -1959,21 +2258,21 @@ html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.
 }
 
 /* first cell is the label - give it a stable proportion and quieter tone */
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child {
   width: 34% !important;
   background: var(--surface-2) !important;
   color: var(--mute) !important;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) td.odsazena:first-child b {
   color: var(--ink) !important;
   font-weight: 600;
 }
 
-html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena,
-html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena {
+html.dark-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena,
+html.light-mode .mainpage table:not(.portal_menu):not(:has(.zahlavi)):not(:has(.rada-ikon)):not(:has(.polozky-obr)):not(.zasadky-info):not(.zasadky-crit):not(.zasadky-warning):not(:has(input)):not(:has(select)):has(td.odsazena) tr:last-child td.odsazena {
   border-bottom: none !important;
 }
 

@@ -139,16 +139,39 @@
 
   // Colors come from CSS classes (.betterais-icon-{info,warn}) rather than
   // inline values, so both themes can tune them independently in style.css.
+  // .zasadky-warning ("POZOR: ..." critical notices) uses the site's OWN
+  // menitka.svg sprite rather than a .uf-icon, and was missed here entirely
+  // until now - it kept the raw site icon while every other notice card got
+  // our unified set, which is what made it look inconsistent with the rest.
   function replaceZasadkaIcons(root) {
-    root.querySelectorAll('.zasadky-info svg, .zasadky-crit svg').forEach((svg) => {
+    root.querySelectorAll('.zasadky-info svg, .zasadky-crit svg, .zasadky-warning svg').forEach((svg) => {
       if (!siteIconId(svg)) return; // already ours
-      const isCrit = !!svg.closest('.zasadky-crit');
-      const markup = svgWithStyle(isCrit ? 'alert-circle' : 'info-circle', 'width:28px;height:28px');
+      const isWarn = !!svg.closest('.zasadky-crit, .zasadky-warning');
+      const markup = svgWithStyle(isWarn ? 'alert-circle' : 'info-circle', 'width:28px;height:28px');
       if (!markup) return;
       svg.outerHTML = markup.replace(
         '<svg ',
-        `<svg class="betterais-icon ${isCrit ? 'betterais-icon-warn' : 'betterais-icon-info'}" `
+        `<svg class="betterais-icon ${isWarn ? 'betterais-icon-warn' : 'betterais-icon-info'}" `
       );
+    });
+  }
+
+  // style.css lays .zasadky-container out as CSS multicol, which packs
+  // cards by real height instead of row-locking them to the tallest one -
+  // but multicol only ever reads DOM order, ignoring the inline "order"
+  // style the site uses to put critical notices ahead of routine ones. Sort
+  // the cards into that same order for real, once, so multicol's own
+  // left-to-right, top-to-bottom fill already matches it.
+  function reorderZasadky(root) {
+    root.querySelectorAll('.zasadky-container').forEach((container) => {
+      const items = Array.from(container.children).filter((el) => el.classList.contains('zasadka'));
+      const sorted = items
+        .map((el, i) => ({ el, order: parseInt(el.style.order, 10) || 0, i }))
+        .sort((a, b) => a.order - b.order || a.i - b.i)
+        .map((entry) => entry.el);
+      const alreadySorted = sorted.every((el, i) => el === items[i]);
+      if (alreadySorted) return; // avoid a no-op DOM write on every observer tick
+      sorted.forEach((el) => container.appendChild(el));
     });
   }
 
@@ -242,6 +265,7 @@
     replacePolozkyIcons(document);
     replaceZasadkaIcons(document);
     replaceHeaderImages(document);
+    reorderZasadky(document);
   }
 
   if (document.readyState === 'loading') {

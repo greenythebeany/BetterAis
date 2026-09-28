@@ -154,6 +154,57 @@
     box-shadow: 0 0 0 1px rgba(0, 0, 0, .3);
   }
 
+  /* preset theme grid: small two-tone swatch (surface + accent) over a
+     short label, 3 to a row so all ~16 presets fit without scrolling */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .theme-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color .15s var(--ease), transform .12s var(--ease), box-shadow .15s var(--ease);
+  }
+
+  .theme-chip:hover {
+    transform: scale(1.04);
+  }
+
+  .theme-chip.active {
+    border-color: var(--link);
+    box-shadow: 0 0 0 1px var(--link);
+  }
+
+  .theme-swatch {
+    width: 100%;
+    aspect-ratio: 2.2 / 1;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, .15);
+  }
+
+  .theme-swatch-none {
+    background:
+      linear-gradient(45deg, transparent 46%, var(--mute) 46%, var(--mute) 54%, transparent 54%),
+      var(--bg);
+  }
+
+  .theme-chip-label {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    text-align: center;
+  }
+
   .button {
     display: block;
     width: 100%;
@@ -213,6 +264,11 @@
       <span class="color-option" style="background-color: #22c55e; color: #22c55e;" data-color="#22c55e"></span>
       <span class="color-option" style="background-color: #06b6d4; color: #06b6d4;" data-color="#06b6d4"></span>
     </div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Preset themes</p>
+    <div class="theme-grid" id="themeGrid"></div>
   </div>
 
   <button id="reload-button" class="button">Apply &amp; reload page</button>

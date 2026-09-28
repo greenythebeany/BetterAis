@@ -1,0 +1,279 @@
+/* ==========================================================================
+   BetterAis - forced preset themes, vendored from github.com/greenythebeany/
+   jellywave rather than @import'd live from jsdelivr, so picking one never
+   depends on a CDN being reachable and never flashes unstyled while it
+   loads.
+
+   Each block below is scoped to html[data-theme="<slug>"] and defines that
+   preset's palette using jellywave's own token names (--bg-void, --accent,
+   etc). The one generic rule at the bottom, html[data-theme], bridges those
+   onto BetterAis's own --bg/--surface/--ink/... variable set that style.css
+   already consumes everywhere - so nothing in style.css needs to know
+   presets exist. content.js sets the data-theme attribute; removing it
+   (picking "None" in the popup) falls straight back to the normal
+   dark/light + accent-color system.
+
+   Equal-specificity note: html[data-theme] and html.dark-mode/.light-mode
+   in style.css are both (element + one class/attribute), so this file's
+   position AFTER style.css in manifest.json's css array is what makes its
+   --link/--bg/etc win the cascade tie when a preset is active. */
+
+html[data-theme="catppuccin-mocha"] {
+  --bg-void: #11111b;
+  --bg-base: #1e1e2e;
+  --bg-elevated: #181825;
+  --bg-highlight: #313244;
+  --bg-card: #24243a;
+  --bg-card-hover: #313244;
+  --text-primary: #cdd6f4;
+  --text-secondary: #bac2de;
+  --text-tertiary: #6c7086;
+  --border-subtle: rgba(205, 214, 244, 0.09);
+  --scrim: rgba(17, 17, 27, 0.6);
+  --danger: #f38ba8;
+  --accent: #cba6f7;
+}
+
+html[data-theme="catppuccin-macchiato"] {
+  --bg-void: #181926;
+  --bg-base: #24273a;
+  --bg-elevated: #1e2030;
+  --bg-highlight: #363a4f;
+  --bg-card: #292c3c;
+  --bg-card-hover: #363a4f;
+  --text-primary: #cad3f5;
+  --text-secondary: #b8c0e0;
+  --text-tertiary: #6e738d;
+  --border-subtle: rgba(202, 211, 245, 0.09);
+  --scrim: rgba(24, 25, 38, 0.6);
+  --danger: #ed8796;
+  --accent: #c6a0f6;
+}
+
+html[data-theme="catppuccin-frappe"] {
+  --bg-void: #232634;
+  --bg-base: #303446;
+  --bg-elevated: #292c3c;
+  --bg-highlight: #414559;
+  --bg-card: #333849;
+  --bg-card-hover: #414559;
+  --text-primary: #c6d0f5;
+  --text-secondary: #b5bfe2;
+  --text-tertiary: #737994;
+  --border-subtle: rgba(198, 208, 245, 0.09);
+  --scrim: rgba(35, 38, 52, 0.6);
+  --danger: #e78284;
+  --accent: #ca9ee6;
+}
+
+html[data-theme="catppuccin-latte"] {
+  --bg-void: #dce0e8;
+  --bg-base: #eff1f5;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #e6e9ef;
+  --bg-card: #e6e9ef;
+  --bg-card-hover: #ccd0da;
+  --text-primary: #4c4f69;
+  --text-secondary: #6c6f85;
+  --text-tertiary: #8c8fa1;
+  --border-subtle: rgba(76, 79, 105, 0.12);
+  --scrim: rgba(239, 241, 245, 0.75);
+  --danger: #d20f39;
+  --accent: #8839ef;
+}
+
+html[data-theme="dracula"] {
+  --bg-void: #191a21;
+  --bg-base: #282a36;
+  --bg-elevated: #21222c;
+  --bg-highlight: #44475a;
+  --bg-card: #2c2e3d;
+  --bg-card-hover: #44475a;
+  --text-primary: #f8f8f2;
+  --text-secondary: #bfbfd6;
+  --text-tertiary: #6272a4;
+  --border-subtle: rgba(248, 248, 242, 0.09);
+  --scrim: rgba(25, 26, 33, 0.6);
+  --danger: #ff5555;
+  --accent: #bd93f9;
+}
+
+html[data-theme="nord"] {
+  --bg-void: #242933;
+  --bg-base: #2e3440;
+  --bg-elevated: #272c36;
+  --bg-highlight: #3b4252;
+  --bg-card: #323846;
+  --bg-card-hover: #434c5e;
+  --text-primary: #eceff4;
+  --text-secondary: #d8dee9;
+  --text-tertiary: #7b88a1;
+  --border-subtle: rgba(236, 239, 244, 0.09);
+  --scrim: rgba(36, 41, 51, 0.6);
+  --danger: #bf616a;
+  --accent: #88c0d0;
+}
+
+html[data-theme="gruvbox-dark"] {
+  --bg-void: #1d2021;
+  --bg-base: #282828;
+  --bg-elevated: #22201e;
+  --bg-highlight: #3c3836;
+  --bg-card: #32302f;
+  --bg-card-hover: #504945;
+  --text-primary: #ebdbb2;
+  --text-secondary: #d5c4a1;
+  --text-tertiary: #a89984;
+  --border-subtle: rgba(235, 219, 178, 0.1);
+  --scrim: rgba(29, 32, 33, 0.6);
+  --danger: #fb4934;
+  --accent: #fe8019;
+}
+
+html[data-theme="gruvbox-light"] {
+  --bg-void: #ebdbb2;
+  --bg-base: #fbf1c7;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #ebdbb2;
+  --bg-card: #f2e5bc;
+  --bg-card-hover: #ebdbb2;
+  --text-primary: #3c3836;
+  --text-secondary: #504945;
+  --text-tertiary: #7c6f64;
+  --border-subtle: rgba(60, 56, 54, 0.12);
+  --scrim: rgba(251, 241, 199, 0.75);
+  --danger: #9d0006;
+  --accent: #af3a03;
+}
+
+html[data-theme="tokyonight"] {
+  --bg-void: #13131a;
+  --bg-base: #1a1b26;
+  --bg-elevated: #16161e;
+  --bg-highlight: #292e42;
+  --bg-card: #1f2335;
+  --bg-card-hover: #292e42;
+  --text-primary: #c0caf5;
+  --text-secondary: #a9b1d6;
+  --text-tertiary: #565f89;
+  --border-subtle: rgba(192, 202, 245, 0.09);
+  --scrim: rgba(19, 19, 26, 0.6);
+  --danger: #f7768e;
+  --accent: #7aa2f7;
+}
+
+html[data-theme="rose-pine"] {
+  --bg-void: #16141f;
+  --bg-base: #191724;
+  --bg-elevated: #1f1d2e;
+  --bg-highlight: #26233a;
+  --bg-card: #1f1d2e;
+  --bg-card-hover: #26233a;
+  --text-primary: #e0def4;
+  --text-secondary: #908caa;
+  --text-tertiary: #6e6a86;
+  --border-subtle: rgba(224, 222, 244, 0.09);
+  --scrim: rgba(22, 20, 31, 0.6);
+  --danger: #eb6f92;
+  --accent: #c4a7e7;
+}
+
+html[data-theme="rose-pine-moon"] {
+  --bg-void: #1c1a2b;
+  --bg-base: #232136;
+  --bg-elevated: #2a273f;
+  --bg-highlight: #393552;
+  --bg-card: #2a273f;
+  --bg-card-hover: #393552;
+  --text-primary: #e0def4;
+  --text-secondary: #908caa;
+  --text-tertiary: #6e6a86;
+  --border-subtle: rgba(224, 222, 244, 0.09);
+  --scrim: rgba(28, 26, 43, 0.6);
+  --danger: #eb6f92;
+  --accent: #c4a7e7;
+}
+
+html[data-theme="rose-pine-dawn"] {
+  --bg-void: #f2e9e1;
+  --bg-base: #faf4ed;
+  --bg-elevated: #fffaf3;
+  --bg-highlight: #f2e9e1;
+  --bg-card: #fffaf3;
+  --bg-card-hover: #f2e9e1;
+  --text-primary: #575279;
+  --text-secondary: #797593;
+  --text-tertiary: #9893a5;
+  --border-subtle: rgba(87, 82, 121, 0.1);
+  --scrim: rgba(250, 244, 237, 0.75);
+  --danger: #b4637a;
+  --accent: #907aa9;
+}
+
+html[data-theme="kanagawa"] {
+  --bg-void: #131317;
+  --bg-base: #1f1f28;
+  --bg-elevated: #16161d;
+  --bg-highlight: #363646;
+  --bg-card: #223249;
+  --bg-card-hover: #2d4f67;
+  --text-primary: #dcd7ba;
+  --text-secondary: #c8c093;
+  --text-tertiary: #727169;
+  --border-subtle: rgba(220, 215, 186, 0.09);
+  --scrim: rgba(19, 19, 23, 0.6);
+  --danger: #c34043;
+  --accent: #957fb8;
+}
+
+html[data-theme="solarized-dark"] {
+  --bg-void: #00212b;
+  --bg-base: #002b36;
+  --bg-elevated: #00252e;
+  --bg-highlight: #073642;
+  --bg-card: #073642;
+  --bg-card-hover: #0a4a5a;
+  --text-primary: #93a1a1;
+  --text-secondary: #839496;
+  --text-tertiary: #586e75;
+  --border-subtle: rgba(147, 161, 161, 0.12);
+  --scrim: rgba(0, 33, 43, 0.6);
+  --danger: #dc322f;
+  --accent: #268bd2;
+}
+
+html[data-theme="solarized-light"] {
+  --bg-void: #eee8d5;
+  --bg-base: #fdf6e3;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #eee8d5;
+  --bg-card: #eee8d5;
+  --bg-card-hover: #e4ddc4;
+  --text-primary: #586e75;
+  --text-secondary: #657b83;
+  --text-tertiary: #93a1a1;
+  --border-subtle: rgba(88, 110, 117, 0.12);
+  --scrim: rgba(253, 246, 227, 0.75);
+  --danger: #dc322f;
+  --accent: #268bd2;
+}
+
+/* bridge: maps whichever preset block matched above onto the variable
+   names style.css actually uses. Wins the cascade tie against
+   html.dark-mode/html.light-mode in style.css purely by loading after it -
+   see manifest.json. */
+html[data-theme] {
+  --bg: var(--bg-void);
+  --surface: var(--bg-base);
+  --surface-2: var(--bg-card);
+  --ink: var(--text-primary);
+  --ink-2: var(--text-secondary);
+  --mute: var(--text-tertiary);
+  --mute-2: var(--text-tertiary);
+  --line: var(--border-subtle);
+  --line-2: var(--border-subtle);
+  --elev: 0 1px 2px var(--scrim);
+  --elev-lift: 0 4px 12px var(--scrim);
+  --link: var(--accent);
+  --tone-danger: var(--danger);
+}

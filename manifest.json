@@ -35,7 +35,8 @@
         "icons.js"
       ],
       "css": [
-        "style.css"
+        "style.css",
+        "themes.css"
       ],
       "run_at": "document_start",
       "all_frames": false
