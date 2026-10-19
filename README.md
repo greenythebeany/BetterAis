@@ -28,7 +28,21 @@ STU's own heritage maroon (`#7a1030`) is the default accent, and light mode is t
 
 ### Themes and color
 - Light and dark themes, with light as the default.
+- Optional dark-mode schedule (default 22:00 → 06:00, windows that cross midnight work). While it's on, it
+  decides dark vs light and the manual switch is locked. Open tabs flip on their own at the boundary. A
+  preset theme still overrides it.
 - Custom accent color, chosen from a curated palette in the popup.
+
+### Language
+The extension's own text (popup, timetable export button) is available in Slovak and English, picked in
+the popup; "Auto" follows the browser language. Strings live in `i18n.js`. AIS's own pages stay in the
+language set on the site.
+
+### Timetable export
+The personal timetable page (`rozvrhy_view.pl`) gets an **Exportovať do kalendára (.ics)** button
+(`timetable.js`). It re-submits the page's own form in the "list of events / specific dates" mode, so every
+occurrence comes with its real date (holidays and odd/even weeks included), and downloads `rozvrh.ics` for
+Google, Apple or Outlook calendar. Event UIDs are stable, so re-importing updates rather than duplicates.
 - The accent is stored raw as `--link-raw` and derived per theme into `--link`. In dark mode it is lightened
   slightly, because a dark saturated color used as text on a near-black surface has almost no contrast.
   Light mode uses the raw value unchanged.
@@ -118,7 +132,7 @@ BetterAis/
 ├── login.css         Login page only (/auth/ and /system/login.pl)
 ├── popup.html        Popup interface
 ├── popup.js          Popup logic and messaging
-└── icons/            Extension icons, generated from icon_big.png
+└── icons/            Extension icons (16/32/48/128), cut out of icon.jpg with a transparent background
 ```
 
 `login.css` is scoped to the login pages, which use the same markup at two different URLs.
@@ -140,3 +154,13 @@ BetterAis/
 ## Credits
 
 Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed.
+
+---
+
+## Credits and licenses
+
+BetterAis is an independent, unofficial project and is not affiliated with or endorsed by STU. All
+third-party material it uses (Tabler Icons, the Roboto font, and the preset theme palettes) is free and
+openly licensed. Sources, licenses and full license texts are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and in the extension itself under **Credits & licenses**
+at the bottom of the popup (`licenses.html`).

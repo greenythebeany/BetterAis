@@ -112,9 +112,147 @@
     transition: background-color .18s var(--ease), color .18s var(--ease);
   }
 
+  .segmented-sm button {
+    font-size: 12px;
+    padding: 7px 0;
+  }
+
   .segmented button.active {
     color: #fff;
     background: var(--link);
+  }
+
+  /* while the schedule is driving dark/light, the manual switch is
+     shown but inert so it's clear why clicking it does nothing */
+  .segmented.locked {
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  /* dark-mode schedule */
+  .schedule {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .schedule-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .schedule-label {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .schedule-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .switch {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--line);
+    transition: background-color .18s var(--ease);
+  }
+
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform .18s var(--ease);
+  }
+
+  .schedule-toggle input:checked + .switch {
+    background: var(--link);
+  }
+
+  .schedule-toggle input:checked + .switch::after {
+    transform: translateX(14px);
+  }
+
+  .schedule-toggle input:focus-visible + .switch {
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--link);
+  }
+
+  .schedule-times {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .schedule-times.disabled {
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  .time-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--mute);
+  }
+
+  .time-field input {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+  }
+
+  /* the native clock button follows color-scheme; pin it to the popup's
+     own theme, not the OS one, or it renders black on the dark field */
+  body.dark-mode .time-field input {
+    color-scheme: dark;
+  }
+
+  body.light-mode .time-field input {
+    color-scheme: light;
+  }
+
+  .time-field input::-webkit-calendar-picker-indicator {
+    opacity: .6;
+    cursor: pointer;
+  }
+
+  .time-field input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
+  .time-field input:focus {
+    outline: none;
+    border-color: var(--link);
+  }
+
+  .schedule-hint {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: var(--mute);
+    min-height: 1em;
+  }
+
+  .schedule-hint:empty {
+    display: none;
   }
 
   /* color grid */
@@ -185,21 +323,47 @@
   }
 
   .theme-swatch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     width: 100%;
     aspect-ratio: 2.2 / 1;
+    padding: 0 8px;
     border-radius: 5px;
-    border: 1px solid rgba(0, 0, 0, .15);
+    background: var(--sw-bg);
+    box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .22);
   }
 
-  .theme-swatch-none {
-    background:
-      linear-gradient(45deg, transparent 46%, var(--mute) 46%, var(--mute) 54%, transparent 54%),
-      var(--bg);
+  .sw-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--sw-accent);
+  }
+
+  .sw-lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sw-line {
+    height: 3px;
+    width: 80%;
+    border-radius: 2px;
+    background: var(--sw-accent);
+  }
+
+  .sw-line-soft {
+    width: 55%;
+    opacity: .4;
   }
 
   .theme-chip-label {
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.15;
     color: var(--ink);
     text-align: center;
@@ -229,6 +393,23 @@
     filter: brightness(.94);
   }
 
+  .credits-link {
+    display: block;
+    margin: 8px auto 0;
+    padding: 4px 8px;
+    border: none;
+    background: none;
+    font: 500 10px/1 var(--font-sans);
+    color: var(--mute);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .credits-link:hover {
+    color: var(--link);
+  }
+
   .footer {
     text-align: center;
     font: 500 10px/1 var(--font-mono);
@@ -241,19 +422,38 @@
   <div class="brand">
     <span class="brand-dot"></span>
     <span class="brand-name">BetterAis</span>
-    <span class="brand-sub">for is.stuba.sk</span>
+    <span class="brand-sub" data-i18n="brandSub">for is.stuba.sk</span>
   </div>
 
   <div class="card">
-    <p class="card-title">Theme</p>
+    <p class="card-title" data-i18n="theme">Theme</p>
     <div class="segmented" id="themeSwitch">
-      <button type="button" data-theme="dark">Dark</button>
-      <button type="button" data-theme="light">Light</button>
+      <button type="button" data-theme="dark" data-i18n="dark">Dark</button>
+      <button type="button" data-theme="light" data-i18n="light">Light</button>
+    </div>
+
+    <div class="schedule">
+      <label class="schedule-toggle">
+        <span class="schedule-label" data-i18n="scheduleLabel">Dark mode on a schedule</span>
+        <input type="checkbox" id="scheduleEnabled" />
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+      <div class="schedule-times" id="scheduleTimes">
+        <label class="time-field">
+          <span data-i18n="scheduleFrom">From</span>
+          <input type="time" id="scheduleStart" value="22:00" />
+        </label>
+        <label class="time-field">
+          <span data-i18n="scheduleTo">To</span>
+          <input type="time" id="scheduleEnd" value="06:00" />
+        </label>
+      </div>
+      <p class="schedule-hint" id="scheduleHint"></p>
     </div>
   </div>
 
   <div class="card">
-    <p class="card-title">Accent color</p>
+    <p class="card-title" data-i18n="accent">Accent color</p>
     <div class="color-grid" id="colorGrid">
       <span class="color-option" style="background-color: #7a1030; color: #7a1030;" data-color="#7a1030"></span>
       <span class="color-option" style="background-color: #4a90e2; color: #4a90e2;" data-color="#4a90e2"></span>
@@ -267,14 +467,26 @@
   </div>
 
   <div class="card">
-    <p class="card-title">Preset themes</p>
+    <p class="card-title" data-i18n="presets">Preset themes</p>
     <div class="theme-grid" id="themeGrid"></div>
   </div>
 
-  <button id="reload-button" class="button">Apply &amp; reload page</button>
+  <div class="card">
+    <p class="card-title" data-i18n="language">Language</p>
+    <div class="segmented segmented-sm" id="languageSwitch">
+      <button type="button" data-lang="auto" data-i18n="languageAuto">Auto</button>
+      <button type="button" data-lang="sk">SK</button>
+      <button type="button" data-lang="cs">CZ</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
 
-  <div class="footer">applies instantly — no flash on reload</div>
+  <button id="reload-button" class="button" data-i18n="reload">Apply &amp; reload page</button>
 
+  <div class="footer" data-i18n="footer">applies instantly — no flash on reload</div>
+  <button type="button" class="credits-link" id="creditsLink" data-i18n="credits">Credits &amp; licenses</button>
+
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

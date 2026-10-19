@@ -32,7 +32,9 @@
       ],
       "js": [
         "content.js",
-        "icons.js"
+        "loader.js",
+        "icons.js",
+        "mobile.js"
       ],
       "css": [
         "style.css",
@@ -50,6 +52,17 @@
         "login.css"
       ],
       "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "*://is.stuba.sk/auth/katalog/rozvrhy_view.pl*"
+      ],
+      "js": [
+        "i18n.js",
+        "timetable.js"
+      ],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ]

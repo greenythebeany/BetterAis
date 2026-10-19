@@ -118,6 +118,16 @@ html.light-mode {
   --link: var(--link-raw);
 }
 
+/* The canvas itself has to carry the theme background, not just <body>.
+   Because <html> has its own background (the pre-JS default above), body's
+   background no longer propagates to the canvas - so anywhere content
+   overflows body (the 1200px min-width #base on a narrow window, or a page
+   shorter than the viewport) showed the dark default instead. */
+html.dark-mode,
+html.light-mode {
+  background: var(--bg) !important;
+}
+
 /* ---- base -------------------------------------------------------------- */
 
 html.dark-mode,
@@ -232,9 +242,8 @@ html.light-mode #hlavicka {
   padding: 16px 32px;
   border-bottom: 3px solid var(--link);
   box-shadow: var(--elev);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  /* scrolls away with the page - a pinned header ate too much screen */
+  position: relative;
   /* the site's branding CSS hardcodes this as a 940px x 170px banner box -
      that's sized for the old maroon design and breaks our layout now */
   min-width: 0 !important;
@@ -2456,6 +2465,40 @@ html.light-mode a.app-ikona:hover .uf-icon svg {
   color: var(--link) !important;
 }
 
+/* App-grid icons icons.js swapped for the Tabler set: just the glyph,
+   centred in the icon box, in the same muted grey as the table icons
+   (accent on hover). AIS positions its own
+   sprite absolutely via --_left/--_top offsets, which our <svg> would
+   otherwise inherit and sit in the top-left corner - so it's put back into
+   normal flow here. Scoped to [data-betterais]; icons we did not replace
+   keep the treatment above. */
+html.dark-mode .app-ikona .uf-icon[data-betterais],
+html.light-mode .app-ikona .uf-icon[data-betterais] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin: 0 auto;
+}
+
+html.dark-mode .app-ikona .uf-icon[data-betterais] > .betterais-icon,
+html.light-mode .app-ikona .uf-icon[data-betterais] > .betterais-icon {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  width: 30px !important;
+  height: 30px !important;
+  color: var(--mute) !important;
+  transition: transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+html.dark-mode a.app-ikona:hover .uf-icon[data-betterais] > .betterais-icon,
+html.light-mode a.app-ikona:hover .uf-icon[data-betterais] > .betterais-icon {
+  color: var(--link) !important;
+  transform: translateY(-2px);
+}
+
 html.dark-mode .app-ikona-text,
 html.light-mode .app-ikona-text {
   font-size: 12.5px;
@@ -2697,4 +2740,1744 @@ html.light-mode .operinfo {
 .menusectionsetup:hover svg,
 .sekce-drive a:hover svg {
   --uc-fill-inner: var(--ink) !important;
+}
+
+/* ---- timetable (rozvrhy_view.pl) -----------------------------------------
+   Lecture/lab cells carry the site's own fixed pastel backgrounds
+   (.rozvrh-pred, .rozvrh-cvic, ...), which never change with the theme - in
+   dark mode the light theme text sat on top of them and was unreadable.
+   Repaint every rozvrh-* cell as a theme-aware tint of the surface instead,
+   so text contrast follows the active theme (presets included). */
+html.dark-mode td[class^="rozvrh-"],
+html.light-mode td[class^="rozvrh-"] {
+  --rozvrh-tone: var(--tone-warn);
+  background: color-mix(in srgb, var(--rozvrh-tone) 18%, var(--surface)) !important;
+  border: 1px solid color-mix(in srgb, var(--rozvrh-tone) 40%, var(--surface)) !important;
+  border-radius: 8px;
+  color: var(--ink) !important;
+  padding: 6px 8px !important;
+  line-height: 1.4;
+}
+
+html.dark-mode td.rozvrh-pred,
+html.light-mode td.rozvrh-pred {
+  --rozvrh-tone: #3fa66b;
+}
+
+html.dark-mode td.rozvrh-cvic,
+html.light-mode td.rozvrh-cvic {
+  --rozvrh-tone: var(--tone-info);
+}
+
+html.dark-mode td[class^="rozvrh-"] a,
+html.light-mode td[class^="rozvrh-"] a {
+  color: var(--ink) !important;
+}
+
+html.dark-mode td[class^="rozvrh-"] i a,
+html.light-mode td[class^="rozvrh-"] i a,
+html.dark-mode td[class^="rozvrh-"] sup,
+html.light-mode td[class^="rozvrh-"] sup {
+  color: var(--ink-2) !important;
+}
+
+html.dark-mode td[class^="rozvrh-"] a:hover,
+html.light-mode td[class^="rozvrh-"] a:hover {
+  color: var(--link) !important;
+}
+
+/* day separators: the site hardcodes bgcolor="#707070" on one of them and
+   leaves the rest unstyled - draw them all as the theme's hairline */
+html.dark-mode tr.rozvrh-sep,
+html.light-mode tr.rozvrh-sep,
+html.dark-mode tr[bgcolor][height="1"],
+html.light-mode tr[bgcolor][height="1"] {
+  background: var(--line) !important;
+}
+
+/* ==========================================================================
+   Phone layout (<= 760px). Only works because mobile.js injects the
+   viewport meta tag the site never shipped - without it a phone reports a
+   ~980px layout width and none of this ever matches.
+
+   Selectors use :root.<mode> (two classes' worth of specificity) and, inside
+   the page, #base - enough to outrank the desktop rules above, most of which
+   are !important at (element + class) specificity, without touching them.
+
+   Direction: one column, nothing wider than the screen, every tap target
+   at least ~44px, and anything non-essential (faculty links, name day,
+   hover lifts) dropped.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  :root {
+    --logo-h: 30px;
+    --header-inset: 12px;
+  }
+
+  /* ---- page frame ------------------------------------------------------ */
+
+  :root.dark-mode body,
+  :root.light-mode body {
+    font-size: 15px;
+    /* stop phone browsers inflating some blocks' text on their own */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  /* login.css pads <body> for its centred login card - keep that on the
+     login page, drop it everywhere else so the header runs edge to edge */
+  :root.dark-mode body:not(:has(#login-btn)),
+  :root.light-mode body:not(:has(#login-btn)) {
+    padding: 0 !important;
+  }
+
+  :root.dark-mode #base,
+  :root.light-mode #base {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 12px 40px !important;
+  }
+
+  /* ---- header -> slim bar + burger drawer (built by mobile.js) -------- */
+
+  :root.dark-mode #hlavicka,
+  :root.light-mode #hlavicka {
+    display: none !important;
+  }
+
+  /* the page's main tab strip lives in the drawer on a phone */
+  :root.dark-mode #base table.portal_menu.betterais-in-drawer,
+  :root.light-mode #base table.portal_menu.betterais-in-drawer {
+    display: none !important;
+  }
+
+  #betterais-mbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* not sticky - scrolls away with the page, same as the desktop header */
+    position: relative;
+    z-index: 60;
+    height: 56px;
+    padding: 0 6px 0 16px;
+    padding-top: env(safe-area-inset-top);
+    background: var(--surface);
+    border-bottom: 2px solid var(--link);
+    box-shadow: var(--elev);
+    /* login.css makes <body> a centred flex column on /auth pages */
+    align-self: stretch;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ---- breadcrumb + title ---------------------------------------------- */
+
+  :root.dark-mode [aria-label="breadcrumb"],
+  :root.light-mode [aria-label="breadcrumb"] {
+    margin: 12px 0 16px !important;
+    padding: 4px 4px 4px 12px;
+    font-size: 14px !important;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] ol.breadcrumb,
+  :root.light-mode [aria-label="breadcrumb"] ol.breadcrumb {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] .breadcrumb-item a,
+  :root.light-mode [aria-label="breadcrumb"] .breadcrumb-item a {
+    display: inline-block;
+    padding: 10px 2px;
+  }
+
+  :root.dark-mode #titulek,
+  :root.light-mode #titulek {
+    margin: 8px 0 16px;
+  }
+
+  :root.dark-mode #titulek h1,
+  :root.light-mode #titulek h1 {
+    font-size: 21px !important;
+  }
+
+  /* ---- portal tab strip: swipeable, snapping, bigger tabs -------------- */
+
+  :root.dark-mode #base table.portal_menu tbody,
+  :root.light-mode #base table.portal_menu tbody,
+  :root.dark-mode #base table.portal_menu tr,
+  :root.light-mode #base table.portal_menu tr {
+    justify-content: flex-start;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :root.dark-mode #base table.portal_menu td,
+  :root.light-mode #base table.portal_menu td {
+    scroll-snap-align: start;
+  }
+
+  :root.dark-mode #base table.portal_menu td.odsazena a,
+  :root.light-mode #base table.portal_menu td.odsazena a {
+    padding: 14px;
+    font-size: 14.5px;
+  }
+
+  /* ---- app shortcut grid: 3 per row, big tap areas ---------------------- */
+
+  :root.dark-mode #base .rada-ikon,
+  :root.light-mode #base .rada-ikon {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important;
+    gap: 4px;
+    padding: 8px !important;
+  }
+
+  :root.dark-mode #base a.app-ikona,
+  :root.light-mode #base a.app-ikona {
+    min-height: 88px;
+    padding: 12px 4px;
+    box-sizing: border-box;
+  }
+
+  /* ---- dashboard section cards ------------------------------------------ */
+
+  :root.dark-mode #base .polozky-obal,
+  :root.light-mode #base .polozky-obal {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    padding: 16px !important;
+  }
+
+  :root.dark-mode #base #vsechny-polozky,
+  :root.light-mode #base #vsechny-polozky,
+  :root.dark-mode #base .vsechny-polozky > div,
+  :root.light-mode #base .vsechny-polozky > div {
+    gap: 12px !important;
+  }
+
+  :root.dark-mode #base .polozky-obal a,
+  :root.light-mode #base .polozky-obal a {
+    display: inline-block;
+    padding: 6px 0;
+  }
+
+  /* public homepage variant (table of icon | content rows) */
+  :root.dark-mode #base table td.odsazena > .polozky-obr,
+  :root.light-mode #base table td.odsazena > .polozky-obr {
+    margin: 0 12px 0 0 !important;
+  }
+
+  /* ---- data tables -> stacked cards --------------------------------------
+     mobile.js tags simple data tables with .betterais-cards and copies each
+     column header into its cells' data-label. Each row becomes a card, each
+     cell a "label  value" line - no sideways scrolling, nothing tiny. */
+
+  :root.dark-mode #base table.betterais-cards,
+  :root.light-mode #base table.betterais-cards,
+  :root.dark-mode #base table.betterais-cards > tbody,
+  :root.light-mode #base table.betterais-cards > tbody {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > thead,
+  :root.light-mode #base table.betterais-cards > thead {
+    display: none !important;
+  }
+
+  /* card: a title line, then the remaining fields two to a row, each a
+     small label stacked over its value - far shorter than one line per
+     field, which put a 13-column grades table at ~2000px for 5 subjects */
+  :root.dark-mode #base table.betterais-cards > tbody > tr,
+  :root.light-mode #base table.betterais-cards > tbody > tr {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    margin: 0 0 12px !important;
+    padding: 14px 16px !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--elev);
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 3px;
+    width: auto !important;
+    min-width: 0;
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+    text-align: left !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink) !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td::before,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  /* long values get the full card width */
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-wide,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* the card's title (Predmet / Názov / ...): first, full width, bold, no label */
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title {
+    grid-column: 1 / -1;
+    order: -1;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid var(--line) !important;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title::before,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title::before,
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td[data-label=""]::before,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td[data-label=""]::before {
+    display: none;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title a,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-title a {
+    font-weight: 700;
+  }
+
+  /* empty cells (and the site's hidden row-number column) are just noise */
+  :root.dark-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-blank,
+  :root.light-mode #base table.betterais-cards > tbody > tr > td.betterais-cell-blank {
+    display: none !important;
+  }
+
+  /* rows spanning the whole table (group headings, totals) */
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span {
+    /* not the two-column card grid - a heading uses the full width */
+    display: block !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 12px 2px 4px !important;
+    font-weight: 700;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span > td,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span > td {
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+  }
+
+  /* icon links inside cards get a real tap area */
+  :root.dark-mode #base table.betterais-cards td a:has(.uf-icon),
+  :root.light-mode #base table.betterais-cards td a:has(.uf-icon) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 40px;
+    margin: -6px 0 -6px -10px;
+  }
+
+  /* ---- anything still wider than the screen ------------------------------
+     Tables that can't become cards (timetable, spanned headers) keep their
+     grid and scroll sideways inside their own box instead of dragging the
+     whole page wider. */
+  :root.dark-mode #base table:has(> thead > tr.zahlavi):not(.betterais-cards),
+  :root.light-mode #base table:has(> thead > tr.zahlavi):not(.betterais-cards) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :root.dark-mode #base .mainpage,
+  :root.light-mode #base .mainpage {
+    overflow-wrap: anywhere;
+  }
+
+  :root.dark-mode #base img,
+  :root.light-mode #base img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ---- forms: 16px text stops iOS zooming in on focus; 44px targets ----- */
+
+  :root.dark-mode #base input[type="text"],
+  :root.light-mode #base input[type="text"],
+  :root.dark-mode #base input[type="password"],
+  :root.light-mode #base input[type="password"],
+  :root.dark-mode #base input[type="search"],
+  :root.light-mode #base input[type="search"],
+  :root.dark-mode #base input[type="number"],
+  :root.light-mode #base input[type="number"],
+  :root.dark-mode #base textarea,
+  :root.light-mode #base textarea,
+  :root.dark-mode #base select,
+  :root.light-mode #base select {
+    font-size: 16px !important;
+    min-height: 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  :root.dark-mode #base input[type="submit"],
+  :root.light-mode #base input[type="submit"],
+  :root.dark-mode #base input[type="button"],
+  :root.light-mode #base input[type="button"],
+  :root.dark-mode #base button,
+  :root.light-mode #base button {
+    min-height: 44px;
+    font-size: 15px !important;
+  }
+
+  :root.dark-mode #base input[type="checkbox"],
+  :root.light-mode #base input[type="checkbox"],
+  :root.dark-mode #base input[type="radio"],
+  :root.light-mode #base input[type="radio"] {
+    width: 22px !important;
+    height: 22px !important;
+    margin: 6px 8px 6px 0;
+  }
+
+  /* timetable cells stay readable while the grid scrolls */
+  :root.dark-mode #base td[class^="rozvrh-"],
+  :root.light-mode #base td[class^="rozvrh-"] {
+    min-width: 140px;
+    font-size: 13px;
+  }
+}
+
+/* touch screens have no hover - lift/translate effects only fire as a
+   sticky leftover after a tap, which reads as a glitch */
+@media (hover: none) {
+  html.dark-mode .polozky-obal:hover,
+  html.light-mode .polozky-obal:hover,
+  html.dark-mode a.app-ikona:hover,
+  html.light-mode a.app-ikona:hover,
+  html.dark-mode #vlajky a:hover,
+  html.light-mode #vlajky a:hover {
+    transform: none;
+  }
+}
+
+/* ---- uploaded-file icons (icons.js: fileIconMarkup) -----------------------
+   One colour per file family; mid-tone values chosen to read on both the
+   light and dark surfaces, since the extension text on the band is drawn
+   in var(--surface). Selectors go through .uf-icon > svg so they outrank
+   the generic "injected icon turns accent on hover" rule. */
+.uf-icon > .betterais-icon-file {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-pdf,     html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-pdf     { color: #d64545 !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-archive, html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-archive { color: #c4871a !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-doc,     html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-doc     { color: #3b78d0 !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-sheet,   html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-sheet   { color: #2e9a5a !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-slides,  html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-slides  { color: #dc6a2c !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-image,   html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-image   { color: #9a5cd0 !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-video,   html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-video   { color: #c94f8f !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-audio,   html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-audio   { color: #c94f8f !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-code,    html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-code    { color: #1e9aa0 !important; }
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-text,    html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-text,
+html.dark-mode .uf-icon > svg.betterais-icon-file.betterais-file-other,   html.light-mode .uf-icon > svg.betterais-icon-file.betterais-file-other   { color: var(--mute) !important; }
+
+/* file icons keep their family colour on hover (the generic rule turns
+   every injected icon accent-coloured) - a slight lift says "clickable" */
+html.dark-mode a:hover .uf-icon > .betterais-icon-file,
+html.light-mode a:hover .uf-icon > .betterais-icon-file {
+  filter: brightness(1.12);
+}
+
+/* the site prints its own red extension tag on file icons via a
+   pseudo-element keyed off data-mime - redundant (and overlapping) now
+   that the extension is drawn into the icon itself */
+.uf-icon[data-sysid^="mime-"][data-betterais]::before,
+.uf-icon[data-sysid^="mime-"][data-betterais]::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* the site's floating scroll buttons (to top / to marker / to bottom) -
+   the site's JS toggles their inline display on scroll, hence !important */
+#automatic-go-to-container,
+#automatic-go-to-container > * {
+  display: none !important;
+}
+
+/* ---- phone chrome built by mobile.js: bar + drawer --------
+   Hidden by default; only the phone media block below turns it on, so the
+   desktop layout never sees any of it. */
+/* :where() keeps this at zero specificity, so the phone rules win no matter
+   where in the file they sit */
+:where(#betterais-mbar, #betterais-scrim, #betterais-drawer) {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  /* ---- bar ---- */
+  .ba-mbar-home {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    color: var(--ink) !important;
+    text-decoration: none !important;
+  }
+
+  /* same white-on-transparent logo PNG the desktop header uses */
+  .ba-mbar-logo {
+    width: calc(26px * 525 / 82);
+    height: 26px;
+    background: url("https://is.stuba.sk/img.pl?userunid=183025") no-repeat left center / contain;
+  }
+
+  html.light-mode .ba-mbar-logo {
+    filter: invert(1);
+  }
+
+  .ba-mbar-title {
+    font: 700 15px/1 var(--font-sans);
+    color: var(--mute);
+    padding-left: 10px;
+    border-left: 1px solid var(--line-2);
+  }
+
+  .ba-mbar-burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    cursor: pointer;
+  }
+
+  .ba-mbar-burger > span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ink);
+  }
+
+  .ba-mbar-burger:active {
+    background: var(--surface-2);
+  }
+
+  /* ---- drawer ---- */
+  #betterais-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    /* above everything the site layers itself (sticky table headers etc) */
+    z-index: 2147483000;
+    background: rgba(0, 0, 0, .45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t) var(--ease);
+  }
+
+  #betterais-drawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2147483001;
+    width: min(320px, 86vw);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0 calc(24px + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-left: 1px solid var(--line);
+    box-shadow: var(--elev-lift);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform var(--t) var(--ease-out), visibility 0s linear var(--t);
+    font-family: var(--font-sans);
+  }
+
+  html.betterais-drawer-open #betterais-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  html.betterais-drawer-open #betterais-drawer {
+    transform: none;
+    visibility: visible;
+    transition: transform var(--t) var(--ease-out), visibility 0s;
+  }
+
+  html.betterais-drawer-open,
+  html.betterais-drawer-open body {
+    overflow: hidden !important;
+  }
+
+  .ba-drawer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: env(safe-area-inset-top) 6px 0 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ba-drawer-user {
+    font: 700 15px/1.3 var(--font-sans);
+    color: var(--ink);
+  }
+
+  .ba-drawer-close {
+    position: relative;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    cursor: pointer;
+  }
+
+  .ba-drawer-close::before,
+  .ba-drawer-close::after {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 21px;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--mute);
+    transform: rotate(45deg);
+  }
+
+  .ba-drawer-close::after {
+    transform: rotate(-45deg);
+  }
+
+  .ba-drawer-section {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ba-drawer-heading {
+    margin: 4px 12px 6px;
+    font: 700 11.5px/1.3 var(--font-sans) !important;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--mute) !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  html.dark-mode .ba-drawer-link,
+  html.light-mode .ba-drawer-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 46px;
+    padding: 0 12px;
+    border-radius: var(--radius-sm);
+    font: 500 15px/1.3 var(--font-sans) !important;
+    color: var(--ink) !important;
+    text-decoration: none !important;
+  }
+
+  html.dark-mode .ba-drawer-link:active,
+  html.light-mode .ba-drawer-link:active {
+    background: var(--surface-2);
+  }
+
+  html.dark-mode .ba-drawer-link.is-active,
+  html.light-mode .ba-drawer-link.is-active {
+    color: var(--link) !important;
+    font-weight: 700 !important;
+    background: color-mix(in srgb, var(--link) 10%, transparent);
+  }
+
+  .ba-drawer-badge {
+    min-width: 24px;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    font: 700 12px/1.2 var(--font-sans);
+    text-align: center;
+    color: var(--mute);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ba-drawer-badge.is-nonzero {
+    background: var(--link);
+    border-color: var(--link);
+    color: #fff;
+  }
+
+  .ba-drawer-faculties > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .ba-drawer-faculties > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ba-drawer-faculties > summary::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform var(--t-fast) var(--ease);
+  }
+
+  .ba-drawer-faculties[open] > summary::after {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+
+  .ba-drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  html.dark-mode .ba-drawer-link.ba-drawer-logout,
+  html.light-mode .ba-drawer-link.ba-drawer-logout {
+    color: var(--tone-danger) !important;
+    font-weight: 600 !important;
+  }
+
+  /* ---- breadcrumb: icons on the text line, sensible sizes ---- */
+  :root.dark-mode [aria-label="breadcrumb"],
+  :root.light-mode [aria-label="breadcrumb"] {
+    min-height: 48px;
+    box-sizing: border-box;
+    /* one line: the trail scrolls sideways, the search button stays put */
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    padding: 4px 4px 4px 12px !important;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] ol.breadcrumb,
+  :root.light-mode [aria-label="breadcrumb"] ol.breadcrumb {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 2px;
+    /* overflow-x:auto clips vertically too - give the row the full icon
+       and tap height so nothing gets cut */
+    height: 40px !important;
+    min-height: 40px !important;
+    overflow-y: hidden;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] .breadcrumb-item,
+  :root.light-mode [aria-label="breadcrumb"] .breadcrumb-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.3 !important;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] .breadcrumb-item a,
+  :root.light-mode [aria-label="breadcrumb"] .breadcrumb-item a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 2px;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] .uf-icon,
+  :root.light-mode [aria-label="breadcrumb"] .uf-icon {
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    /* the site positions the svg absolutely inside this box - it must stay
+       the containing block, or the icon stretches to a far ancestor */
+    position: relative !important;
+  }
+
+  :root.dark-mode [aria-label="breadcrumb"] .searchinbreadcrumbs,
+  :root.light-mode [aria-label="breadcrumb"] .searchinbreadcrumbs {
+    flex: none;
+    justify-content: center;
+    width: 40px !important;
+    height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ---- phone: timetable grid ------------------------------------------------
+   The grid is 131 columns (10 per hour + 2-column gaps). The generic table
+   padding (12-14px on every cell) is what made it tall and squashed - here
+   empty cells get no padding at all, hour headers stay on one line, and the
+   day column sticks to the left edge while the grid scrolls sideways. */
+@media (max-width: 760px) {
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]):has(> thead),
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]):has(> thead) {
+    display: block !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    margin: 0 0 16px !important;
+  }
+
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) :is(th, td),
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) :is(th, td) {
+    padding: 0 !important;
+    border: none !important;
+    height: auto !important;
+    vertical-align: middle !important;
+  }
+
+  /* hour labels: one line, fixed width per hour */
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) th.zahlavi,
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) th.zahlavi {
+    padding: 10px 6px !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--mute) !important;
+    text-align: left !important;
+    background: var(--surface-2) !important;
+    border-bottom: 1px solid var(--line) !important;
+  }
+
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) th.zahlavi[colspan="10"],
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) th.zahlavi[colspan="10"] {
+    min-width: 92px;
+  }
+
+  /* day column: pinned left while the hours scroll */
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) :is(th, td):first-child.zahlavi,
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) :is(th, td):first-child.zahlavi {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 34px;
+    padding: 0 8px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    font-weight: 700 !important;
+    color: var(--link) !important;
+    background: var(--surface-2) !important;
+    border-right: 1px solid var(--line) !important;
+  }
+
+  /* lesson cells */
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) td[class^="rozvrh-"],
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) td[class^="rozvrh-"] {
+    padding: 8px 10px !important;
+    border-radius: var(--radius-sm) !important;
+    border: none !important;
+    font-size: 12.5px !important;
+    line-height: 1.35;
+    min-width: 0;
+    /* a ring in the surface colour reads as a gap between lessons that sit
+       directly next to / above each other */
+    box-shadow: inset 0 0 0 3px var(--surface),
+                inset 0 0 0 4px color-mix(in srgb, var(--rozvrh-tone) 45%, var(--surface));
+  }
+
+  /* a row with no lesson still needs some height to read as a day */
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:has(> td.zahlavi),
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:has(> td.zahlavi) {
+    height: 52px;
+  }
+
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:has(> td.zahlavi) > td:not([class^="rozvrh-"]),
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:has(> td.zahlavi) > td:not([class^="rozvrh-"]) {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  /* day separators and the trailing filler row */
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:not(:has(> td.zahlavi)),
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:not(:has(> td.zahlavi)) {
+    height: 1px !important;
+    background: var(--line) !important;
+  }
+
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:not(:has(> td.zahlavi)) > td,
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:not(:has(> td.zahlavi)) > td {
+    height: 1px !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+  }
+
+  :root.dark-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:hover,
+  :root.light-mode #base table:has(> tbody > tr > td[class^="rozvrh-"]) tbody > tr:hover {
+    background: none !important;
+  }
+}
+
+/* ---- phone: burger menu motion -------------------------------------------
+   Opening: the burger morphs into an X, the scrim fades in with a light
+   blur, the drawer slides in on a soft spring, and its rows follow one
+   after another (--ba-i is each row's index, set by mobile.js). Closing
+   runs quicker and all at once, so it never feels like waiting. */
+@media (max-width: 760px) {
+  .ba-mbar-burger > span {
+    transition: transform .35s cubic-bezier(.5, 1.6, .4, 1), opacity .2s ease, width .25s ease;
+    transform-origin: center;
+  }
+
+  .ba-mbar-burger > span:nth-child(2) {
+    width: 16px;
+    align-self: center;
+  }
+
+  .ba-mbar-burger:active > span {
+    width: 18px;
+  }
+
+  html.betterais-drawer-open .ba-mbar-burger > span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  html.betterais-drawer-open .ba-mbar-burger > span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  html.betterais-drawer-open .ba-mbar-burger > span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  #betterais-scrim {
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+    transition: opacity .3s ease, backdrop-filter .3s ease, -webkit-backdrop-filter .3s ease;
+  }
+
+  html.betterais-drawer-open #betterais-scrim {
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+
+  #betterais-drawer {
+    border-radius: 20px 0 0 20px;
+    transition: transform .28s cubic-bezier(.4, 0, 1, 1), visibility 0s linear .28s;
+  }
+
+  html.betterais-drawer-open #betterais-drawer {
+    transition: transform .5s cubic-bezier(.2, 1.15, .3, 1), visibility 0s;
+  }
+
+  /* rows slide in after the panel, one by one */
+  #betterais-drawer .ba-drawer-heading,
+  #betterais-drawer .ba-drawer-link,
+  #betterais-drawer .ba-drawer-user {
+    opacity: 0;
+    transform: translateX(24px);
+    transition: opacity .15s ease, transform .15s ease;
+  }
+
+  html.betterais-drawer-open #betterais-drawer .ba-drawer-heading,
+  html.betterais-drawer-open #betterais-drawer .ba-drawer-link,
+  html.betterais-drawer-open #betterais-drawer .ba-drawer-user {
+    opacity: 1;
+    transform: none;
+    transition: opacity .35s ease, transform .45s cubic-bezier(.2, 1.2, .3, 1);
+    transition-delay: calc(120ms + var(--ba-i, 0) * 28ms);
+  }
+
+  html.betterais-drawer-open #betterais-drawer .ba-drawer-user {
+    transition-delay: 80ms;
+  }
+
+  /* the close X spins into place */
+  .ba-drawer-close {
+    transform: rotate(-90deg) scale(.6);
+    opacity: 0;
+    transition: transform .2s ease, opacity .15s ease;
+  }
+
+  html.betterais-drawer-open .ba-drawer-close {
+    transform: none;
+    opacity: 1;
+    transition: transform .5s cubic-bezier(.3, 1.6, .5, 1) .15s, opacity .2s ease .15s;
+  }
+
+  .ba-drawer-close:active {
+    background: var(--surface-2);
+  }
+
+  /* tap feedback on rows */
+  html.dark-mode .ba-drawer-link,
+  html.light-mode .ba-drawer-link {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html.dark-mode .ba-drawer-link:active,
+  html.light-mode .ba-drawer-link:active {
+    transform: scale(.98) !important;
+    transition-duration: .08s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Reduced motion (e.g. Windows with animation effects off): the panel still
+   slides and the scrim still fades - the opening motion is how the menu
+   explains where it came from - but on a plain curve, without the bounce,
+   the row-by-row cascade or the spinning close button. Needs id-level
+   !important to beat the sitewide reduced-motion rule near the top. */
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  html.dark-mode #betterais-drawer,
+  html.light-mode #betterais-drawer {
+    transition: transform .22s ease-in, visibility 0s linear .22s !important;
+  }
+
+  html.dark-mode.betterais-drawer-open #betterais-drawer,
+  html.light-mode.betterais-drawer-open #betterais-drawer {
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility 0s !important;
+  }
+
+  html.dark-mode #betterais-scrim,
+  html.light-mode #betterais-scrim {
+    transition: opacity .25s ease !important;
+  }
+
+  html.dark-mode #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close),
+  html.light-mode #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---- phone: form tables ---------------------------------------------------
+   Filters and settings are laid out as label | control | button tables.
+   On a phone the label column got squeezed until words broke letter by
+   letter and the button ran off screen. Each row becomes a wrapping flex
+   line instead: a text-only first cell is the label on its own line, the
+   control fills the width, and a button sits next to it or wraps below. */
+@media (max-width: 760px) {
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))),
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))),
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody,
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr,
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    padding: 10px 0;
+    background: none !important;
+    border-bottom: 1px solid var(--line);
+  }
+
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr:last-child,
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr:last-child {
+    border-bottom: none;
+  }
+
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td,
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+    white-space: normal !important;
+  }
+
+  /* text-only first cell = the field's label, on its own line */
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td:first-child:not(:has(select, textarea, input, button)):not(:only-child),
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td:first-child:not(:has(select, textarea, input, button)):not(:only-child) {
+    flex: 1 1 100%;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mute) !important;
+  }
+
+  /* a cell holding only a button doesn't stretch */
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td:has(> :is(input[type="submit"], input[type="button"], button)):not(:has(select, textarea, input[type="text"])),
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)):has(> tbody > tr > td :is(select, textarea, input:not([type="hidden"]))) > tbody > tr > td:has(> :is(input[type="submit"], input[type="button"], button)):not(:has(select, textarea, input[type="text"])) {
+    flex: 0 0 auto;
+  }
+
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > select,
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > select,
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > input[type="text"],
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > input[type="text"] {
+    flex: 1 1 180px;
+    width: auto !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  :root.dark-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > :is(input[type="submit"], input[type="button"], button),
+  :root.light-mode #base table:not(.portal_menu):not(.betterais-cards):not(:has(> thead)) td > :is(input[type="submit"], input[type="button"], button) {
+    flex: none;
+    margin: 0 !important;
+    padding: 10px 18px !important;
+  }
+}
+
+/* ---- phone: document server folder tree (.tree) ---------------------------
+   The site draws the connecting lines with absolutely positioned 1px divs
+   sized in fixed pixels for a 21px row, so any taller row tears them apart.
+   On a phone they're replaced by plain indentation with one light guide
+   line per level, 40px rows, and a chevron (open / closed) or a dot (leaf)
+   in place of the +/- images. */
+@media (max-width: 760px) {
+  :root.dark-mode #base .tree :is(.border-top, .border-bottom, .clear),
+  :root.light-mode #base .tree :is(.border-top, .border-bottom, .clear) {
+    display: none !important;
+  }
+
+  :root.dark-mode #base .tree .subtree,
+  :root.light-mode #base .tree .subtree {
+    border: none !important;
+    background: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  :root.dark-mode #base .tree ul,
+  :root.light-mode #base .tree ul {
+    list-style: none !important;
+    margin: 0 0 0 13px !important;
+    padding: 0 0 0 8px !important;
+    border-left: 1px solid var(--line-2);
+  }
+
+  :root.dark-mode #base .tree > ul,
+  :root.light-mode #base .tree > ul {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    border-left: none;
+  }
+
+  :root.dark-mode #base .tree li,
+  :root.light-mode #base .tree li {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+  }
+
+  :root.dark-mode #base .tree .node-container,
+  :root.light-mode #base .tree .node-container {
+    position: relative;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+  }
+
+  :root.dark-mode #base .tree .node-container.root > .node-icon-container,
+  :root.light-mode #base .tree .node-container.root > .node-icon-container {
+    display: none !important;
+  }
+
+  :root.dark-mode #base .tree .node-icon-container,
+  :root.light-mode #base .tree .node-icon-container {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+  }
+
+  :root.dark-mode #base .tree .node-icon,
+  :root.light-mode #base .tree .node-icon {
+    position: static !important;
+    float: none !important;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 !important;
+    border-radius: 8px;
+    background: none !important;
+    cursor: pointer;
+  }
+
+  /* chevron: down = open folder */
+  :root.dark-mode #base .tree .node-icon::before,
+  :root.light-mode #base .tree .node-icon::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--mute);
+    border-bottom: 2px solid var(--mute);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform .2s ease;
+  }
+
+  /* right = closed folder */
+  :root.dark-mode #base .tree .node-container.active.closed > .node-icon-container > .node-icon::before,
+  :root.light-mode #base .tree .node-container.active.closed > .node-icon-container > .node-icon::before {
+    transform: rotate(-45deg) translate(-1px, -1px);
+  }
+
+  /* dot = folder without subfolders */
+  :root.dark-mode #base .tree .node-container:not(.active) > .node-icon-container > .node-icon::before,
+  :root.light-mode #base .tree .node-container:not(.active) > .node-icon-container > .node-icon::before {
+    width: 5px;
+    height: 5px;
+    border: none;
+    border-radius: 50%;
+    background: var(--line-2);
+    transform: none;
+  }
+
+  :root.dark-mode #base .tree .node-container.active > .node-icon-container > .node-icon:active,
+  :root.light-mode #base .tree .node-container.active > .node-icon-container > .node-icon:active {
+    background: var(--surface-2) !important;
+  }
+
+  :root.dark-mode #base .tree .node-label,
+  :root.light-mode #base .tree .node-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    float: none !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 6px 0;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+}
+
+/* ---- phone: no letter-by-letter breaking -----------------------------------
+   overflow-wrap:anywhere lets the browser size table columns down to a
+   single character - which is exactly what squashed headers like "Predmet"
+   into a vertical stack. break-word still wraps long URLs but doesn't
+   shrink anything's minimum width. */
+@media (max-width: 760px) {
+  :root.dark-mode #base .mainpage,
+  :root.light-mode #base .mainpage {
+    overflow-wrap: break-word !important;
+  }
+
+  :root.dark-mode #base table:has(> thead > tr.zahlavi):not(.betterais-cards) th,
+  :root.light-mode #base table:has(> thead > tr.zahlavi):not(.betterais-cards) th {
+    white-space: nowrap !important;
+  }
+}
+
+/* ---- phone: List záznamníka učiteľa (attendance grid) ---------------------
+   A real grid (subject x lesson x 15 weeks + operation icons), so it stays a
+   table that scrolls sideways - compact cells, the subject column pinned on
+   the left, the long "Kedy" (time + room) text wrapped to a narrow column
+   so the week marks start right after it. */
+@media (max-width: 760px) {
+  :root.dark-mode #base table:has(tr.zahlavi-main),
+  :root.light-mode #base table:has(tr.zahlavi-main) {
+    display: block !important;
+    overflow-x: auto;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) :is(th, td),
+  :root.light-mode #base table:has(tr.zahlavi-main) :is(th, td) {
+    padding: 6px 7px !important;
+    white-space: nowrap !important;
+    font-size: 12.5px !important;
+    line-height: 1.35 !important;
+    vertical-align: middle !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tr.zahlavi-main > :is(th, td),
+  :root.light-mode #base table:has(tr.zahlavi-main) tr.zahlavi-main > :is(th, td) {
+    background: var(--surface-2) !important;
+    color: var(--mute) !important;
+    font-weight: 600 !important;
+    text-align: center;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tr > :is(th, td):nth-child(2)[rowspan],
+  :root.light-mode #base table:has(tr.zahlavi-main) tr > :is(th, td):nth-child(2)[rowspan] {
+    /* only the subject cells (rowspan) and their "Predmet" header stick -
+       z-index above the site's icon layers (inline z-index up to 20) */
+    position: sticky;
+    left: 0;
+    z-index: 30;
+    min-width: 130px;
+    max-width: 150px;
+    white-space: normal !important;
+    text-align: left !important;
+    font-weight: 600;
+    background: var(--surface) !important;
+    border-right: 1px solid var(--line) !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tr.zahlavi-main > :is(th, td):nth-child(2)[rowspan],
+  :root.light-mode #base table:has(tr.zahlavi-main) tr.zahlavi-main > :is(th, td):nth-child(2)[rowspan] {
+    background: var(--surface-2) !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main) > td:nth-child(2):not([rowspan]),
+  :root.light-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main) > td:nth-child(2):not([rowspan]) {
+    position: static;
+    font-weight: 400;
+    background: none !important;
+    border-right: none !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main) > td[rowspan] + td,
+  :root.dark-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main):not(:has(> td[rowspan])) > td:nth-child(2),
+  :root.light-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main) > td[rowspan] + td,
+  :root.light-mode #base table:has(tr.zahlavi-main) tbody tr:not(.zahlavi-main):not(:has(> td[rowspan])) > td:nth-child(2) {
+    min-width: 120px !important;
+    max-width: 150px;
+    white-space: normal !important;
+    font-size: 12px !important;
+    color: var(--ink-2) !important;
+  }
+
+  :root.dark-mode #base table:has(tr.zahlavi-main) tr > :is(th, td):first-child:not(:has(*)),
+  :root.light-mode #base table:has(tr.zahlavi-main) tr > :is(th, td):first-child:not(:has(*)) {
+    display: none;
+  }
+}
+
+/* ---- hardcoded legacy text colours -----------------------------------------
+   Pages like Kontrola plánu mark state with <font color="red"> and inline
+   style="color: blue" - fixed pure red/blue that ignore the theme (and are
+   harsh on dark). Map them onto the theme's tones instead. */
+html.dark-mode :is(font[color="red" i], font[color="#ff0000" i], [style*="color: red" i], [style*="color:red" i]),
+html.light-mode :is(font[color="red" i], font[color="#ff0000" i], [style*="color: red" i], [style*="color:red" i]) {
+  color: var(--tone-danger) !important;
+}
+
+html.dark-mode :is(font[color="blue" i], font[color="#0000ff" i], [style*="color: blue" i], [style*="color:blue" i]),
+html.light-mode :is(font[color="blue" i], font[color="#0000ff" i], [style*="color: blue" i], [style*="color:blue" i]) {
+  color: var(--tone-info) !important;
+}
+
+html.dark-mode :is(font[color="green" i], font[color="#008000" i], [style*="color: green" i], [style*="color:green" i]),
+html.light-mode :is(font[color="green" i], font[color="#008000" i], [style*="color: green" i], [style*="color:green" i]) {
+  color: #3fa66b !important;
+}
+
+/* ---- tables whose header is a body row (tr.zahlavi, no <thead>) -----------
+   mobile.js tags them .betterais-rowtable, plus .betterais-card-head on the
+   header rows, .betterais-row-title on single-cell headings ("1. semester
+   ZS 2026/2027") and .betterais-row-empty on spacer rows. Same look as the
+   regular data tables. */
+html.dark-mode table.betterais-rowtable,
+html.light-mode table.betterais-rowtable {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  margin: 0 0 20px !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr > td,
+html.light-mode table.betterais-rowtable > tbody > tr > td {
+  padding: 11px 14px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: none !important;
+  color: var(--ink-2) !important;
+  font-size: 13.5px !important;
+  vertical-align: middle;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr.betterais-card-head > td,
+html.light-mode table.betterais-rowtable > tbody > tr.betterais-card-head > td {
+  background: var(--surface-2) !important;
+  color: var(--ink) !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid var(--line-2) !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr.betterais-row-title > td,
+html.light-mode table.betterais-rowtable > tbody > tr.betterais-row-title > td {
+  padding: 18px 14px 10px !important;
+  color: var(--ink) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr.betterais-row-title > td :is(b, h2, h3, font),
+html.light-mode table.betterais-rowtable > tbody > tr.betterais-row-title > td :is(b, h2, h3, font) {
+  font-size: inherit !important;
+  color: inherit !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr.betterais-row-empty,
+html.light-mode table.betterais-rowtable > tbody > tr.betterais-row-empty {
+  display: none !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr:not(.betterais-card-head):not(.betterais-row-title):hover > td,
+html.light-mode table.betterais-rowtable > tbody > tr:not(.betterais-card-head):not(.betterais-row-title):hover > td {
+  background: color-mix(in srgb, var(--link) 6%, var(--surface)) !important;
+}
+
+/* phone: these are cards too - the in-body header rows go away (their
+   text is on every card as labels), section headings stay as headings */
+@media (max-width: 760px) {
+  :root.dark-mode #base table.betterais-rowtable,
+  :root.light-mode #base table.betterais-rowtable {
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-head,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-head {
+    display: none !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-row-title > td,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-row-title > td {
+    padding: 14px 2px 6px !important;
+    font-size: 16px !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-row-title > td.UISTMNumberCellHidden,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-row-title > td.UISTMNumberCellHidden {
+    display: none !important;
+  }
+}
+
+/* phone: non-data rows inside card tables */
+@media (max-width: 760px) {
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-row-empty,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-row-empty {
+    display: none !important;
+  }
+
+  /* icon + text rows ("! Skupina predmetov povinných - NESPLNENÁ"): one line */
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title),
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title) {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 2px 8px !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title) > td,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title) > td {
+    flex: 0 0 auto;
+    width: auto !important;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title) > td:last-child,
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span:not(.betterais-row-title) > td:last-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  :root.dark-mode #base table.betterais-cards > tbody > tr.betterais-card-span > td:is(.UISTMNumberCellHidden, :empty),
+  :root.light-mode #base table.betterais-cards > tbody > tr.betterais-card-span > td:is(.UISTMNumberCellHidden, :empty) {
+    display: none !important;
+  }
+}
+
+/* the site paints alternate <tr>s light (zebra via class/bgcolor) - with the
+   cells transparent above, that light row showed through under light theme
+   text. Rows are neutral; zebra goes on the cells, in theme colours. */
+html.dark-mode table.betterais-rowtable > tbody > tr,
+html.light-mode table.betterais-rowtable > tbody > tr {
+  background: none !important;
+}
+
+html.dark-mode table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-head):not(.betterais-card-span) > td,
+html.light-mode table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-head):not(.betterais-card-span) > td {
+  background: var(--surface-2) !important;
+}
+
+/* ...and with id-level specificity, because the site's own zebra rule for
+   these rows still won on desktop (light row under light theme text).
+   Desktop only - on a phone these rows are cards with their own surface. */
+@media (min-width: 761px) {
+:root.dark-mode #base table.betterais-rowtable > tbody > tr,
+:root.light-mode #base table.betterais-rowtable > tbody > tr {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+:root.dark-mode #base table.betterais-rowtable > tbody > tr > td,
+:root.light-mode #base table.betterais-rowtable > tbody > tr > td {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+:root.dark-mode #base table.betterais-rowtable > tbody > tr:not(.sudy):not(.betterais-card-head) > td,
+:root.light-mode #base table.betterais-rowtable > tbody > tr:not(.sudy):not(.betterais-card-head) > td {
+  background-color: transparent !important;
+}
+
+:root.dark-mode #base table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-head):not(.betterais-card-span) > td,
+:root.light-mode #base table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-head):not(.betterais-card-span) > td {
+  background-color: var(--surface-2) !important;
+}
+
+:root.dark-mode #base table.betterais-rowtable > tbody > tr:not(.betterais-card-head):not(.betterais-card-span):hover > td,
+:root.light-mode #base table.betterais-rowtable > tbody > tr:not(.betterais-card-head):not(.betterais-card-span):hover > td {
+  background-color: color-mix(in srgb, var(--link) 7%, var(--surface)) !important;
+}
+}
+
+/* Timetable "export to calendar" bar, injected by timetable.js under the
+   personal timetable's title */
+.betterais-ics {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 4px 0 18px;
+}
+
+.betterais-ics-btn {
+  color: #fff !important;
+  background-color: var(--link) !important;
+  padding: 10px 20px;
+  border: none !important;
+  border-radius: var(--radius-pill) !important;
+  cursor: pointer;
+  font: 600 13px/1 var(--font-sans);
+  letter-spacing: .01em;
+  transition: filter var(--t-fast) var(--ease);
+}
+
+.betterais-ics-btn:hover {
+  filter: brightness(1.08);
+}
+
+.betterais-ics-btn:disabled {
+  cursor: progress;
+  opacity: .6;
+}
+
+.betterais-ics-status {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+/* ---- page transitions ---------------------------------------------------
+   AIS is a multi-page site, so every click is a full navigation. Opting
+   every page into cross-document View Transitions (style.css is injected on
+   all of them, so both the old and the new page opt in) means Chrome swaps
+   pages without a blank frame. The loader cover (loader.js) carries its own
+   transition name, so it stays rock-steady across the swap. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(betterais-loader) {
+  animation-duration: 0s;
+}
+
+/* Full-screen cover: frosted theme background. Fades in over the page
+   being left (after a short delay, so instant navigations never flash it)
+   and dissolves away on the page that arrives. Centre: the graduation cap in an accent tile over a
+   0 -> 100 progress bar. */
+#betterais-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: color-mix(in srgb, var(--bg, #f5f5f5) 86%, transparent);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .38s cubic-bezier(.4, 0, .2, 1), visibility 0s linear .38s;
+  view-transition-name: betterais-loader;
+}
+
+#betterais-loader.is-on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  cursor: progress;
+  transition: opacity .24s cubic-bezier(.2, .7, .15, 1) .12s, visibility 0s;
+}
+
+/* arriving page: already covered at first paint, no fade-in */
+#betterais-loader.is-instant {
+  transition: none;
+}
+
+.bl-mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--link, #7a1030) 10%, var(--surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--link, #7a1030) 22%, var(--line, #ddd));
+  transform: translateY(6px) scale(.96);
+  transition: transform .5s cubic-bezier(.2, .7, .15, 1);
+}
+
+#betterais-loader.is-on .bl-mark {
+  transform: none;
+}
+
+.bl-cap {
+  width: 30px;
+  height: 30px;
+  color: var(--link, #7a1030);
+  animation: bl-breathe 2.8s ease-in-out infinite;
+}
+
+/* 0 -> 100 bar: races ahead, then crawls toward 90% (long ease-out) while
+   the server works; loader.js snaps it to 100% on the new page right before
+   the cover dissolves. */
+.bl-bar {
+  position: relative;
+  width: min(220px, 60vw);
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--link, #7a1030) 14%, var(--line, #ddd));
+}
+
+.bl-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--link, #7a1030) 55%, transparent),
+    var(--link, #7a1030));
+}
+
+/* soft sheen travelling along the filled part */
+.bl-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .45), transparent);
+  transform: translateX(-100%);
+  animation: bl-sheen 1.6s ease-in-out infinite;
+}
+
+#betterais-loader.is-on .bl-fill {
+  transform: scaleX(.9);
+  transition: transform 9s cubic-bezier(.08, .82, .17, 1) .12s;
+}
+
+#betterais-loader.is-instant .bl-fill {
+  transition: none;
+}
+
+#betterais-loader.is-complete .bl-fill {
+  transform: scaleX(1);
+  transition: transform .28s cubic-bezier(.2, .7, .15, 1);
+}
+
+@keyframes bl-breathe {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes bl-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  .bl-cap,
+  .bl-fill::after {
+    animation: none;
+  }
 }

@@ -1,0 +1,147 @@
+/* Credits page (licenses.html), opened from the popup. Mirrors the popup's
+   tokens; follows the OS light/dark preference since it opens as a tab. */
+:root {
+  --link: #7a1030;
+  --bg: #f2f3f5;
+  --surface: #ffffff;
+  --ink: #1b2027;
+  --mute: #666e7a;
+  --line: #d8dce2;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --link: #c25a78;
+    --bg: #101216;
+    --surface: #171a20;
+    --ink: #eef0f4;
+    --mute: #8b93a3;
+    --line: #262b34;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.55 'Roboto', -apple-system, "Segoe UI", system-ui, Arial, sans-serif;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--link);
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+h2 {
+  margin: 32px 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+a {
+  color: var(--link);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.note,
+.list li,
+details {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.note {
+  padding: 4px 16px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list li {
+  padding: 12px 16px;
+}
+
+.list p {
+  margin: 4px 0 0;
+  color: var(--mute);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lic {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mute);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+details {
+  margin-bottom: 8px;
+}
+
+summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+pre {
+  margin: 0;
+  padding: 0 16px 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.5 ui-monospace, Consolas, monospace;
+  color: var(--mute);
+}
