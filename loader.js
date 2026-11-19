@@ -55,8 +55,14 @@
     hideTimers = [];
   }
 
+  // Page content fades behind the cover too (style.css: betterais-leaving /
+  // betterais-arriving), so under the blur the old page fades out and the
+  // new one fades in instead of snapping from one to the other.
+  const root = document.documentElement;
+
   function show(instant) {
     const el = ensureCover();
+    if (!instant) root.classList.add('betterais-leaving');
     clearHideTimers();
     el.classList.remove('is-complete');
     el.classList.toggle('is-instant', !!instant);
@@ -69,10 +75,16 @@
   // cover is fully invisible, so it never visibly jumps backwards.
   function hide() {
     clearTimeout(giveUpTimer);
-    if (!cover || !cover.classList.contains('is-on') || hideTimers.length) return;
+    if (!cover || !cover.classList.contains('is-on')) {
+      // nothing to dissolve - but never leave the page content faded out
+      root.classList.remove('betterais-arriving', 'betterais-leaving');
+      return;
+    }
+    if (hideTimers.length) return;
     cover.classList.add('is-complete');
     hideTimers.push(setTimeout(() => {
       cover.classList.remove('is-instant', 'is-on');
+      root.classList.remove('betterais-arriving', 'betterais-leaving');
     }, COMPLETE_MS));
     hideTimers.push(setTimeout(() => {
       cover.classList.remove('is-complete');
@@ -117,7 +129,10 @@
   // Back/forward can restore this page from the bfcache with the cover still
   // up from when we left - drop it.
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted) hide();
+    if (event.persisted) {
+      root.classList.remove('betterais-leaving');
+      hide();
+    }
   });
 
   // Arriving from a navigation the previous page started: begin fully
@@ -133,6 +148,7 @@
     arriving = false;
   }
   if (arriving) {
+    root.classList.add('betterais-arriving');
     show(true);
     const reveal = () => requestAnimationFrame(() => requestAnimationFrame(hide));
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal, { once: true });

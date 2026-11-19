@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BetterAis",
-  "version": "3.0",
+  "version": "4.0",
   "description": "Modern redesign of STU AIS (is.stuba.sk): light and dark themes, unified icons, cleaner tables, and a custom accent color.",
   "permissions": [
     "storage",
@@ -34,11 +34,14 @@
         "content.js",
         "loader.js",
         "icons.js",
-        "mobile.js"
+        "mobile.js",
+        "header.js",
+        "motion.js"
       ],
       "css": [
         "style.css",
-        "themes.css"
+        "themes.css",
+        "nothing.css"
       ],
       "run_at": "document_start",
       "all_frames": false
@@ -64,6 +67,30 @@
       ],
       "run_at": "document_idle",
       "all_frames": false
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "betterais@greenybeany",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*.woff2"
+      ],
+      "matches": [
+        "*://is.stuba.sk/*"
+      ]
     }
   ]
 }

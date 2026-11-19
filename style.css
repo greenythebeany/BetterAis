@@ -53,6 +53,18 @@
      token, nudging it moves the pair together instead of desynchronising
      them. */
   --header-inset: 30px;
+
+  /* Right edge alignment between the UIS header and the breadcrumb bar
+     below it (same outer edges): the breadcrumb's 28px help icon box sits
+     --crumb-pad-r in from the edge, and the header's content is inset so the
+     20px logout icon's centre lands on the help icon's centre. */
+  --crumb-pad-r: 24px;
+  --crumb-pad-l: 20px;
+
+  /* the one content column: #base, and the UIS header + breadcrumb bar that
+     sit outside it (siblings in .wholepage) so they line up with it */
+  --page-w: min(1400px, 100% - 64px);
+  --header-pad-r: calc(var(--crumb-pad-r) + 14px - 10px);
 }
 
 @media (max-width: 900px) {
@@ -147,12 +159,30 @@ html.light-mode body {
   text-rendering: optimizeLegibility;
 }
 
+/* Motion follows the popup's Animácie switch (content.js -> data-motion):
+   "on" (default) animates even when the OS asks for reduced motion - the
+   user opted in explicitly - and "off" stills everything. Only without a
+   setting yet (pre-JS) does the OS preference decide. */
 @media (prefers-reduced-motion: reduce) {
-  html.dark-mode *,
-  html.light-mode * {
+  html.dark-mode:not([data-motion="on"]) *,
+  html.light-mode:not([data-motion="on"]) * {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
+}
+
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+
+html[data-motion="off"]::view-transition-group(*),
+html[data-motion="off"]::view-transition-old(*),
+html[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
 }
 
 html.dark-mode ::selection,
@@ -438,7 +468,7 @@ html.dark-mode #base,
 html.light-mode #base {
   /* centered, 1200px is a floor not a ceiling - on a wide monitor it grows
      up to 1400px, on a narrower one it never gets more cramped than 1200 */
-  width: min(1400px, 100% - 64px) !important;
+  width: var(--page-w) !important;
   min-width: 1200px;
   margin: 0 auto !important;
   padding: 0 0 56px 0 !important;
@@ -495,6 +525,24 @@ html.light-mode table:has(> thead > tr.zahlavi) {
 html.dark-mode [aria-label="breadcrumb"],
 html.light-mode [aria-label="breadcrumb"] {
   margin: 20px 0 40px 0 !important;
+}
+
+/* UIS layout: header + breadcrumb are direct children of .wholepage, outside
+   #base - give them #base's width, centred, instead of the full window */
+html.dark-mode .wholepage > #header,
+html.light-mode .wholepage > #header,
+html.dark-mode .wholepage > [aria-label="breadcrumb"],
+html.light-mode .wholepage > [aria-label="breadcrumb"] {
+  width: var(--page-w) !important;
+  min-width: 1200px;
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+
+html.dark-mode [aria-label="breadcrumb"],
+html.light-mode [aria-label="breadcrumb"] {
   border-radius: var(--radius-sm) !important;
   height: fit-content !important;
   width: 100% !important;
@@ -503,7 +551,10 @@ html.light-mode [aria-label="breadcrumb"] {
   display: flex !important;
   align-items: center !important;
   gap: 6px;
-  padding: 10px 16px;
+  /* !important: the site's base.css squeezes the bar's padding, which left
+     it ~36px tall and cramped around the 28px icons */
+  padding: 14px var(--crumb-pad-r) 14px var(--crumb-pad-l) !important;
+  min-height: 56px;
   border: 1px solid var(--line) !important;
   background: var(--surface) !important;
   box-shadow: var(--elev);
@@ -523,6 +574,52 @@ html.light-mode [aria-label="breadcrumb"] {
   display: flex;
   align-items: center;
   margin-left: auto;
+}
+
+/* Right-hand breathing room lives on the last icon, not the bar: on some
+   setups the bar's own padding is forced to 0 by the site, which left the ?
+   icon flush against the edge. header.js then centres the logout icon over
+   wherever ? ends up. */
+html.dark-mode [aria-label="breadcrumb"] .helpinbreadcrumbs,
+html.light-mode [aria-label="breadcrumb"] .helpinbreadcrumbs {
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+}
+
+/* Home (inside the list) and search/help (siblings of the list) come from
+   different site markup with different margins and line boxes, which left
+   the magnifier ~4px higher than the house. Centre every piece on the bar's
+   one axis, with identical 28px icon boxes. */
+[aria-label="breadcrumb"] ol.breadcrumb,
+[aria-label="breadcrumb"] .breadcrumb-item,
+[aria-label="breadcrumb"] .breadcrumb-item > a,
+[aria-label="breadcrumb"] .searchinbreadcrumbs,
+[aria-label="breadcrumb"] .helpinbreadcrumbs,
+[aria-label="breadcrumb"] .helpinbreadcrumbs > a {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* The site absolutely positions every icon <svg> inside its .uf-icon box
+   from its own --_left/--_top/--_width/--_height variables, so our
+   replacement glyphs (icons.js) landed at different offsets - the house in a
+   squashed 40x17 box, the magnifier higher. Put them back in normal flow at
+   one size, centred in the box. */
+[aria-label="breadcrumb"] .uf-icon.xs {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+[aria-label="breadcrumb"] .uf-icon > .betterais-icon {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 [aria-label="breadcrumb"] a {
@@ -809,9 +906,10 @@ html.light-mode .polozky-obr {
   /* icons.js sizes these icons at 100% - the padding here is what actually
      controls the glyph size inside the badge */
   padding: 11px !important;
-  background: color-mix(in srgb, var(--link) 10%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--link) 20%, var(--line));
-  color: var(--link);
+  /* solid accent tile, white glyph */
+  background: var(--link);
+  border: 1px solid var(--link);
+  color: #ffffff;
   margin: 0 0 16px 0 !important;
   overflow: hidden;
 }
@@ -944,9 +1042,10 @@ html.light-mode .closed-section > a:first-child {
   padding: 9px;
   box-sizing: border-box;
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--link) 10%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--link) 20%, var(--line));
-  color: var(--link) !important;
+  /* solid accent tile, white glyph - same as the open cards' .polozky-obr */
+  background: var(--link);
+  border: 1px solid var(--link);
+  color: #ffffff !important;
 }
 
 .closed-section > a:first-child svg {
@@ -1953,18 +2052,62 @@ html.light-mode table.portal_menu {
    is auto and the other is visible, the visible one computes to auto too -
    which was adding a stray vertical scrollbar. Setting overflow-y:hidden
    explicitly (not the default visible) sidesteps that. */
+/* Every tab must be visible: once they no longer fit on one line they wrap
+   onto another instead of scrolling behind an edge fade (a strip with ~10
+   tabs - Portál študenta - didn't fit at common widths and hid the last
+   ones). Packed from the left so a wrapped line reads as a continuation. */
 table.portal_menu tbody,
 table.portal_menu tr {
   display: flex !important;
-  flex-wrap: nowrap !important;
-  justify-content: space-between;
-  gap: 2px;
+  flex-wrap: wrap !important;
+  justify-content: flex-start;
+  gap: 2px 4px;
   border: none !important;
   background: none !important;
   height: auto !important;
   min-height: 0 !important;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: visible;
+}
+
+/* ...but only the <tr> is the flex row. With <tbody> flexing too, the <tr>
+   was sized as a single line, so a wrapped second line of tabs hung below
+   the table and overlapped the text underneath. tbody as a plain block lets
+   the <tr> grow to hold every line; cells size to their tab, not to a
+   stretched 87px. */
+table.portal_menu tbody {
+  display: block !important;
+}
+
+table.portal_menu td {
+  height: auto !important;
+}
+
+/* No visible scrollbar on the tab strip - mobile.js maps the mouse wheel to
+   horizontal scroll and toggles is-scroll-start/-end, which fade the edge
+   that has more tabs hidden behind it. */
+table.portal_menu tbody,
+table.portal_menu tr {
+  scrollbar-width: none;
+}
+
+table.portal_menu tbody::-webkit-scrollbar,
+table.portal_menu tr::-webkit-scrollbar {
+  display: none;
+}
+
+table.portal_menu tr.is-scroll-end {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+}
+
+table.portal_menu tr.is-scroll-start {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px);
+  mask-image: linear-gradient(90deg, transparent, #000 48px);
+}
+
+table.portal_menu tr.is-scroll-start.is-scroll-end {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 
 /* legacy spacer cells from the old table layout, one between every tab -
@@ -1999,8 +2142,10 @@ html.dark-mode table.portal_menu td.odsazena a,
 html.light-mode table.portal_menu td.odsazena a {
   position: relative;
   display: block;
-  padding: 11px 16px;
-  font-size: 13.5px;
+  /* --tab-scale (mobile.js) shrinks font + padding just enough to keep all
+     tabs on one line */
+  padding: 10px calc(12px * var(--tab-scale, 1)) !important;
+  font-size: calc(13.5px * var(--tab-scale, 1)) !important;
   font-weight: 500;
   color: var(--mute) !important;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -2877,7 +3022,8 @@ html.light-mode tr[bgcolor][height="1"] {
   :root.dark-mode [aria-label="breadcrumb"],
   :root.light-mode [aria-label="breadcrumb"] {
     margin: 12px 0 16px !important;
-    padding: 4px 4px 4px 12px;
+    padding: 4px 4px 4px 12px !important;
+    min-height: 0;
     font-size: 14px !important;
   }
 
@@ -2914,6 +3060,10 @@ html.light-mode tr[bgcolor][height="1"] {
   :root.dark-mode #base table.portal_menu tr,
   :root.light-mode #base table.portal_menu tr {
     justify-content: flex-start;
+    /* phones keep one swipeable line (desktop wraps, see above) */
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -3784,23 +3934,23 @@ html.light-mode a:hover .uf-icon > .betterais-icon-file {
    the row-by-row cascade or the spinning close button. Needs id-level
    !important to beat the sitewide reduced-motion rule near the top. */
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
-  html.dark-mode #betterais-drawer,
-  html.light-mode #betterais-drawer {
+  html.dark-mode:not([data-motion="on"]) #betterais-drawer,
+  html.light-mode:not([data-motion="on"]) #betterais-drawer {
     transition: transform .22s ease-in, visibility 0s linear .22s !important;
   }
 
-  html.dark-mode.betterais-drawer-open #betterais-drawer,
-  html.light-mode.betterais-drawer-open #betterais-drawer {
+  html.dark-mode.betterais-drawer-open:not([data-motion="on"]) #betterais-drawer,
+  html.light-mode.betterais-drawer-open:not([data-motion="on"]) #betterais-drawer {
     transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility 0s !important;
   }
 
-  html.dark-mode #betterais-scrim,
-  html.light-mode #betterais-scrim {
+  html.dark-mode:not([data-motion="on"]) #betterais-scrim,
+  html.light-mode:not([data-motion="on"]) #betterais-scrim {
     transition: opacity .25s ease !important;
   }
 
-  html.dark-mode #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close),
-  html.light-mode #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close) {
+  html.dark-mode:not([data-motion="on"]) #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close),
+  html.light-mode:not([data-motion="on"]) #betterais-drawer :is(.ba-drawer-heading, .ba-drawer-link, .ba-drawer-user, .ba-drawer-close) {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
@@ -4470,14 +4620,557 @@ html.light-mode table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-h
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
+  html:not([data-motion="on"])::view-transition-group(*),
+  html:not([data-motion="on"])::view-transition-old(*),
+  html:not([data-motion="on"])::view-transition-new(*) {
     animation: none !important;
   }
 
-  .bl-cap,
-  .bl-fill::after {
+  html:not([data-motion="on"]) .bl-cap,
+  html:not([data-motion="on"]) .bl-fill::after {
     animation: none;
   }
+}
+
+/* ---- UIS header user menu (header.js) ------------------------------------
+   The profile photo opened a dropdown with mail / documents / storage /
+   settings / sign-out / language. header.js copies those into a row under
+   the user's name, so the photo (and its popup) is hidden. */
+/* Hidden from the first paint (style.css is applied at document_start), not
+   only once header.js has built the row - otherwise the photo flashed for a
+   moment on every load. If the row can't be built on some page, header.js
+   marks the header .betterais-keep-pfp and the photo (with its menu) comes
+   back. */
+#header:not(.betterais-keep-pfp) #pfp {
+  display: none !important;
+}
+
+html.dark-mode #header.betterais-has-usermenu,
+html.light-mode #header.betterais-has-usermenu {
+  padding-right: var(--header-pad-r) !important;
+}
+
+html.dark-mode #header.betterais-has-usermenu .right,
+html.light-mode #header.betterais-has-usermenu .right,
+html.dark-mode #header.betterais-has-usermenu .right .info,
+html.light-mode #header.betterais-has-usermenu .right .info {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.betterais-usermenu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 14px;
+  margin-top: 6px;
+  font: 500 12.5px/1.3 var(--font-sans);
+}
+
+.betterais-usermenu-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--mute) !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.betterais-usermenu-link:hover {
+  color: var(--link) !important;
+}
+
+/* name + sign-out close the row, set off from the four app icons */
+.betterais-usermenu-name {
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+  color: var(--ink) !important;
+  font-size: 13.5px;
+}
+
+/* the site's own name line - its text now lives in the icon row */
+#header .info > .betterais-moved-name {
+  display: none !important;
+}
+
+/* icon links: 20px glyph; badge pinned to the icon's top-right corner */
+.betterais-usermenu-link.is-icon {
+  position: relative;
+}
+
+.betterais-usermenu-link.is-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.betterais-usermenu-link.is-icon .betterais-usermenu-badge {
+  position: absolute;
+  top: -7px;
+  right: -11px;
+  min-width: 16px;
+  padding: 1px 4px;
+  font-size: 9.5px;
+  line-height: 1.2;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+/* name-day line carries the flags at its end */
+.betterais-nameday {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.betterais-usermenu-badge {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--link);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.betterais-usermenu-langs {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.betterais-usermenu-langs a {
+  display: inline-flex;
+  opacity: .85;
+  transition: opacity var(--t-fast) var(--ease);
+}
+
+.betterais-usermenu-langs a:hover {
+  opacity: 1;
+}
+
+.betterais-usermenu-langs img {
+  display: block;
+  width: 21px;
+  height: 14px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .18);
+  object-fit: cover;
+}
+
+/* Numbered step markers (.portal_menu_order > div) - the site sizes them
+   from the text and its line-height, so they came out as tall ovals. Force a
+   true circle on the inner element and strip any border from the wrapper. */
+.portal_menu_order {
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.portal_menu_order > div {
+  box-sizing: border-box !important;
+  display: inline-grid !important;
+  place-items: center;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px;
+  padding: 0 !important;
+  border: 1px solid var(--line-2) !important;
+  border-radius: 50% !important;
+  background: var(--surface) !important;
+  color: var(--mute) !important;
+  font: 600 13px/1 var(--font-sans) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- UIS header: "UIS | STU" -----------------------------------------------
+   The site's UIS logo and university name are replaced by a "UIS" wordmark
+   (header.js: two accent squares above a shorter U, like the original logo)
+   and the STU mark (the site's own img.pl?userunid=183025 - white artwork on
+   a transparent 525x82 canvas whose visible mark is ~462x46 at x=32,y=18,
+   inverted for light mode).
+
+   Both are exactly as tall as the right-hand block (name day ... icon row):
+   header.js measures that block into --brand-h. The right column never
+   shrinks or wraps, so the logo's size can't feed back into its height (a
+   loop that once blew the logo up: bigger logo -> narrower right column ->
+   wrapped, taller text -> bigger logo). */
+html.dark-mode #header,
+html.light-mode #header {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+}
+
+html.dark-mode #header,
+html.light-mode #header {
+  --brand-h: 64px;
+}
+
+html.dark-mode #header .left,
+html.light-mode #header .left {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  gap: 0 !important;
+  min-width: 0;
+  font-size: 0 !important;
+}
+
+html.dark-mode #header .right,
+html.light-mode #header .right {
+  flex: none !important;
+}
+
+html.dark-mode #header .right .info,
+html.light-mode #header .right .info {
+  white-space: nowrap;
+}
+
+html.dark-mode #header #uis-logo,
+html.light-mode #header #uis-logo,
+html.dark-mode #header .left::before,
+html.light-mode #header .left::before {
+  display: none !important;
+}
+
+.betterais-wordmark {
+  flex: none;
+  /* 80% of the right block: the full height read as oversized next to it */
+  height: calc(var(--brand-h) * .8);
+  width: auto;
+  aspect-ratio: 124 / 60;
+  padding-right: 24px;
+  border-right: 1px solid var(--line-2);
+  box-sizing: content-box;
+  overflow: visible;
+}
+
+.betterais-wordmark .wm-dot {
+  fill: var(--link);
+}
+
+.betterais-wordmark .wm-u {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 13;
+}
+
+.betterais-wordmark .wm-text {
+  fill: var(--ink);
+  font: 800 79px/1 var(--font-sans);
+  letter-spacing: -1px;
+}
+
+/* STU artwork, measured from the PNG's pixels (525x82 canvas): the dots +
+   "STU" mark spans x 31-229, y 20-66; the two-line tagline runs x 295-494
+   within the same band. Cropped with a 2px margin for the antialiased edges
+   (the tight crop clipped the bottom row of dots): x 29-496, y 18-68, a
+   467x50 box. Its height keeps the mark itself at 62% of the right block
+   (.62 * 50/46 = .674), so the tagline doesn't crowd the right column.
+   Percent background maths: canvas = 525/467 = 112.42% of the box wide;
+   offsets 29/(525-467) = 50% and 18/(82-50) = 56.25%. */
+html.dark-mode #header .left::after,
+html.light-mode #header .left::after {
+  content: '';
+  flex: none;
+  height: calc(var(--brand-h) * .674);
+  aspect-ratio: 467 / 50;
+  margin-left: 24px;
+  background: url('https://is.stuba.sk/img.pl?userunid=183025') no-repeat;
+  background-size: 112.42% auto;
+  background-position: 50% 56.25%;
+}
+
+html.light-mode #header .left::after {
+  filter: invert(1);
+}
+
+@media (max-width: 900px) {
+  html.dark-mode #header,
+  html.light-mode #header {
+    --brand-h: 34px !important;
+  }
+
+  .betterais-wordmark {
+    padding-right: 14px;
+  }
+
+  html.dark-mode #header .left::after,
+  html.light-mode #header .left::after {
+    margin-left: 14px;
+  }
+}
+
+/* phones: header + breadcrumb go back to full width, like #base does */
+@media (max-width: 760px) {
+  html.dark-mode .wholepage > #header,
+  html.light-mode .wholepage > #header,
+  html.dark-mode .wholepage > [aria-label="breadcrumb"],
+  html.light-mode .wholepage > [aria-label="breadcrumb"] {
+    width: 100% !important;
+    min-width: 0;
+  }
+}
+
+/* ---- UIS header spacing + accent breadcrumb bar ---------------------------
+   The header's content (name, date, icon row) is taller than the site's
+   fixed header height, so the icon row ran into the breadcrumb bar below.
+   Let the header grow and keep a clear gap under it. */
+html.dark-mode .wholepage > #header,
+html.light-mode .wholepage > #header {
+  height: auto !important;
+  min-height: 0 !important;
+  padding-bottom: 18px !important;
+}
+
+/* Breadcrumb bar on an 85% accent fill, so the page location reads as part of
+   the brand bar. Everything on it - trail text, separators, icons - turns
+   white to stay legible on the accent. */
+html.dark-mode [aria-label="breadcrumb"],
+html.light-mode [aria-label="breadcrumb"] {
+  background: color-mix(in srgb, var(--link) 85%, transparent) !important;
+  border-color: transparent !important;
+  color: rgba(255, 255, 255, .85) !important;
+}
+
+html.dark-mode [aria-label="breadcrumb"] a,
+html.light-mode [aria-label="breadcrumb"] a,
+html.dark-mode [aria-label="breadcrumb"] .breadcrumb-item,
+html.light-mode [aria-label="breadcrumb"] .breadcrumb-item,
+html.dark-mode [aria-label="breadcrumb"] .breadcrumb-item::before,
+html.light-mode [aria-label="breadcrumb"] .breadcrumb-item::before,
+html.dark-mode [aria-label="breadcrumb"] .uf-icon,
+html.light-mode [aria-label="breadcrumb"] .uf-icon {
+  color: rgba(255, 255, 255, .85) !important;
+}
+
+html.dark-mode [aria-label="breadcrumb"] .breadcrumb-item.active,
+html.light-mode [aria-label="breadcrumb"] .breadcrumb-item.active,
+html.dark-mode [aria-label="breadcrumb"] a:hover,
+html.light-mode [aria-label="breadcrumb"] a:hover,
+html.dark-mode [aria-label="breadcrumb"] a:hover .uf-icon,
+html.light-mode [aria-label="breadcrumb"] a:hover .uf-icon,
+html.dark-mode [aria-label="breadcrumb"] .uf-icon:hover,
+html.light-mode [aria-label="breadcrumb"] .uf-icon:hover {
+  color: #ffffff !important;
+}
+
+/* ...icons need more weight: the untoned-icon rule (.uf-icon:has(...) ->
+   --mute) and the hover rule (a:hover .uf-icon > .betterais-icon -> --link)
+   are both more specific than the plain selectors above */
+html.dark-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais],
+html.light-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais],
+html.dark-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais] > .betterais-icon,
+html.light-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais] > .betterais-icon {
+  color: rgba(255, 255, 255, .85) !important;
+}
+
+html.dark-mode nav[aria-label="breadcrumb"] a:hover .uf-icon[data-betterais] > .betterais-icon,
+html.light-mode nav[aria-label="breadcrumb"] a:hover .uf-icon[data-betterais] > .betterais-icon,
+html.dark-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais]:hover > .betterais-icon,
+html.light-mode nav[aria-label="breadcrumb"] .uf-icon[data-betterais]:hover > .betterais-icon {
+  color: #ffffff !important;
+}
+
+/* The bar's box styles (fill, padding, margins) were losing to an outside
+   rule more specific than [aria-label] - the fill never showed while the
+   white text did, leaving the trail invisible. In the UIS layout the bar
+   always follows #header, so an ID-anchored selector outweighs it. */
+html.dark-mode #header ~ nav[aria-label="breadcrumb"],
+html.light-mode #header ~ nav[aria-label="breadcrumb"] {
+  background: color-mix(in srgb, var(--link) 85%, transparent) !important;
+  border: none !important;
+  padding: 14px var(--crumb-pad-r) 14px var(--crumb-pad-l) !important;
+  margin-top: 4px !important;
+  margin-bottom: 40px !important;
+}
+
+@media (max-width: 760px) {
+  html.dark-mode #header ~ nav[aria-label="breadcrumb"],
+  html.light-mode #header ~ nav[aria-label="breadcrumb"] {
+    padding: 4px 4px 4px 12px !important;
+    margin-bottom: 16px !important;
+  }
+}
+
+/* The site nudges breadcrumb pieces with relative offsets (li top:-1px, the
+   icon box top:-2px), which left the home icon 3px above the search/help
+   icons on the bar's centre line. Flex centring does the job - drop them. */
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item,
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item,
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .uf-icon,
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .uf-icon {
+  top: 0 !important;
+}
+
+/* "UIS" lines up with the house icon in the breadcrumb bar below: same left
+   edge (shared --page-w box), so inset the header by the bar's left padding
+   plus the 3px between the 28px icon box and its 22px glyph (the wordmark's
+   own side bearing roughly matches the glyph's). */
+html.dark-mode .wholepage > #header,
+html.light-mode .wholepage > #header {
+  padding-left: calc(var(--crumb-pad-l) + 3px) !important;
+}
+
+@media (max-width: 760px) {
+  html.dark-mode .wholepage > #header,
+  html.light-mode .wholepage > #header {
+    padding-left: 15px !important;
+  }
+}
+
+/* The site pads the first trail item (the house) ~17.6px in from the bar's
+   padding; drop it so the house sits at the same inset as "UIS" above. */
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item:first-child,
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item:first-child {
+  padding-left: 0 !important;
+}
+
+/* ---- dashboard card head: icon + title on one line, hairline below ------
+   Each card's grid holds the 48px icon badge and a content column (title,
+   then the link list). The column started ~10px lower than the icon, so the
+   title never shared the icon's centre line. Give the title the icon's
+   height and centre its text in it; then a hairline across the whole card
+   separates that head row from the list. */
+/* the card body fills the whole card (cards in a row stretch to the
+   tallest), so anything pinned to its bottom - the chevron below - sits at
+   the card's bottom, not under the shortest list */
+html.dark-mode #menitko #vsechny-polozky > .polozky-obal,
+html.light-mode #menitko #vsechny-polozky > .polozky-obal {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+html.dark-mode #menitko #vsechny-polozky > .polozky-obal > .ramecek-boky,
+html.light-mode #menitko #vsechny-polozky > .polozky-obal > .ramecek-boky {
+  flex: 1 1 auto !important;
+}
+
+/* hairline as a background line on the grid (not a positioned
+   pseudo-element), so the grid doesn't become the chevron's anchor */
+html.dark-mode #menitko .polozky-obal > .ramecek-boky > div,
+html.light-mode #menitko .polozky-obal > .ramecek-boky > div {
+  background: linear-gradient(var(--card-rule), var(--card-rule)) no-repeat 0 62px / 100% 1px;
+}
+
+html.light-mode #menitko .polozky-obal > .ramecek-boky > div {
+  --card-rule: var(--line);
+}
+
+/* dark mode: --line almost vanished on the dark card - lighter grey */
+html.dark-mode #menitko .polozky-obal > .ramecek-boky > div {
+  --card-rule: color-mix(in srgb, var(--mute) 45%, transparent);
+}
+
+html.dark-mode #menitko .polozky-obal .polozky.prostor-ikona,
+html.light-mode #menitko .polozky-obal .polozky.prostor-ikona {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+html.dark-mode #menitko .polozky-obal .polozky.prostor-ikona > .sekce-nadpis,
+html.light-mode #menitko .polozky-obal .polozky.prostor-ikona > .sekce-nadpis {
+  display: flex !important;
+  align-items: center;
+  min-height: 48px;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.25 !important;
+}
+
+/* the list starts just below the hairline - the site's own top spacing on
+   the list is dropped so the gap is exactly this */
+html.dark-mode #menitko .polozky-obal .polozky.prostor-ikona > ul,
+html.light-mode #menitko .polozky-obal .polozky.prostor-ikona > ul {
+  margin-top: 25px !important; /* 14px gap + 1px line + 10px */
+  padding-top: 0 !important;
+}
+
+html.dark-mode #menitko .polozky-obal .polozky.prostor-ikona > ul > li:first-child,
+html.light-mode #menitko .polozky-obal .polozky.prostor-ikona > ul > li:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* expand/collapse chevron (.sekce-drive): the site anchors it to the card's
+   corner, but the card grid above is now position:relative (for the
+   hairline), which re-anchored it next to the icon. Pin it explicitly to the
+   bottom centre of the card (the card body's bottom, which now reaches the
+   card's padding). */
+html.dark-mode #menitko .polozky-obal .sekce-drive,
+html.light-mode #menitko .polozky-obal .sekce-drive {
+  position: absolute !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: -14px !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+  margin: 0 !important;
+  line-height: 0;
+}
+
+/* Breadcrumb separator: a right chevron instead of the site's "/". Drawn as
+   a mask filled with currentColor, so it takes the bar's text colour. */
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item + .breadcrumb-item::before,
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item + .breadcrumb-item::before {
+  content: '' !important;
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0 10px 0 8px;
+  padding: 0 !important;
+  float: none !important;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6l-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6l-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: .75;
+}
+
+/* Trail text on the house icon's centre line: a tight line box (the default
+   one is taller than the letters, and accents like "ú" pull the visual
+   centre down) plus a 1px optical lift. */
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > a:not(:has(.uf-icon)),
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > a:not(:has(.uf-icon)),
+html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > span,
+html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > span {
+  line-height: 1 !important;
+  position: relative;
+  top: -1px;
+}
+
+/* ---- one page width everywhere --------------------------------------------
+   On the UIS layout <body> is a flex container, so .wholepage only sized to
+   its content: 1200px on a page with narrow content, ~1560px on the home page
+   or one with a wide table. Every width derived from it (--page-w for #base,
+   the header and the breadcrumb bar) changed from page to page with it.
+   Pin .wholepage to the full window width so every page uses the home page's
+   layout: up to 1400px, centred. */
+html.dark-mode body > .wholepage,
+html.light-mode body > .wholepage {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Content crossfade behind the loader cover (loader.js): the page fades out
+   as a navigation starts and the next one fades in as the cover dissolves,
+   instead of snapping from one to the other under the blur. Only the page's
+   main blocks - not the mobile drawer/scrim, which carry their own
+   transforms. Off with the Animácie switch. */
+html[data-motion="on"] body > :is(.wholepage, #base, #hlavicka, #betterais-mbar) {
+  transition: opacity .32s cubic-bezier(.4, 0, .2, 1);
+}
+
+html[data-motion="on"].betterais-leaving body > :is(.wholepage, #base, #hlavicka, #betterais-mbar),
+html[data-motion="on"].betterais-arriving body > :is(.wholepage, #base, #hlavicka, #betterais-mbar) {
+  opacity: 0;
 }

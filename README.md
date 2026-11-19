@@ -6,7 +6,7 @@ tables, hardcoded pixel widths, inline `font-size: 10px` cells and a maroon head
 replaces that with a flat, modern intranet design in light and dark themes, without breaking any of the
 site's functionality.
 
-**Version 3.0**
+**Version 4.0**
 
 ---
 
@@ -160,7 +160,7 @@ Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed.
 ## Credits and licenses
 
 BetterAis is an independent, unofficial project and is not affiliated with or endorsed by STU. All
-third-party material it uses (Tabler Icons, the Roboto font, and the preset theme palettes) is free and
+third-party material it uses (Tabler Icons, the Roboto, Doto and Space Mono fonts, and the preset theme palettes) is free and
 openly licensed. Sources, licenses and full license texts are in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and in the extension itself under **Credits & licenses**
 at the bottom of the popup (`licenses.html`).

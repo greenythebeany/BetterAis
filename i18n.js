@@ -34,6 +34,11 @@
       icsError: 'Export failed ({error}).',
       icsCalendarName: 'STU timetable',
       credits: 'Credits & licenses',
+      uiStyle: 'Style',
+      uiStyleDefault: 'Default',
+      motionLabel: 'Animations',
+      motionHint: 'Plays animations even when Windows has them turned off.',
+      accentLocked: 'The Nothing style always uses its own red accent.',
     },
     sk: {
       brandSub: 'pre is.stuba.sk',
@@ -59,6 +64,11 @@
       icsError: 'Export zlyhal ({error}).',
       icsCalendarName: 'Rozvrh STU',
       credits: 'Zdroje a licencie',
+      uiStyle: 'Štýl',
+      uiStyleDefault: 'Predvolený',
+      motionLabel: 'Animácie',
+      motionHint: 'Animácie sa prehrajú aj keď ich má Windows vypnuté.',
+      accentLocked: 'Štýl Nothing používa vždy vlastnú červenú farbu.',
     },
     cs: {
       brandSub: 'pro is.stuba.sk',
@@ -84,6 +94,11 @@
       icsError: 'Export selhal ({error}).',
       icsCalendarName: 'Rozvrh STU',
       credits: 'Zdroje a licence',
+      uiStyle: 'Styl',
+      uiStyleDefault: 'Výchozí',
+      motionLabel: 'Animace',
+      motionHint: 'Animace se přehrají i když je má Windows vypnuté.',
+      accentLocked: 'Styl Nothing používá vždy vlastní červenou barvu.',
     },
   };
 

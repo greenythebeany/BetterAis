@@ -24,6 +24,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const themeButtons = document.querySelectorAll('#themeSwitch button');
     const reloadButton = document.getElementById('reload-button');
     const colorOptions = document.querySelectorAll('.color-option');
+    const colorGrid = document.getElementById('colorGrid');
+    // Animácie: on by default; content.js -> html[data-motion], motion.js
+    const animationsEnabled = document.getElementById('animationsEnabled');
+    const accentHint = document.getElementById('accentHint');
+    // Nothing style always uses Nothing red - must match nothing.css
+    const NOTHING_RED = '#d71921';
+    let savedLink = '#7a1030';
+    let currentStyle = 'default';
+
+    // The popup's own accent: Nothing red while that style is on, otherwise
+    // the user's pick.
+    function paintAccent() {
+        document.documentElement.style.setProperty('--link', currentStyle === 'nothing' ? NOTHING_RED : savedLink);
+    }
     const themeGrid = document.getElementById('themeGrid');
     const themeSwitch = document.getElementById('themeSwitch');
     const scheduleEnabled = document.getElementById('scheduleEnabled');
@@ -49,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
         languageButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === setting);
         });
+        if (accentHint) accentHint.textContent = currentStyle === 'nothing' ? t('accentLocked') : '';
         const noneLabel = themeGrid.querySelector('.theme-chip[data-slug=""] .theme-chip-label');
         if (noneLabel) noneLabel.textContent = t('presetNone');
         renderSchedule();
@@ -172,7 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Load saved preferences (defaults must match content.js)
-    chrome.storage.local.get(['theme', 'linkColor', 'forcedTheme', 'schedule', 'uiLanguage'], function (data) {
+    chrome.storage.local.get(['theme', 'linkColor', 'forcedTheme', 'schedule', 'uiLanguage', 'uiStyle', 'animations'], function (data) {
+        animationsEnabled.checked = data.animations !== false;
         const linkColor = data.linkColor || '#7a1030';
         const forcedTheme = data.forcedTheme || '';
         const schedule = Object.assign({ enabled: false, start: '22:00', end: '06:00' }, data.schedule || {});
@@ -182,7 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
         scheduleStart.value = schedule.start;
         scheduleEnd.value = schedule.end;
 
-        document.documentElement.style.setProperty('--link', linkColor);
+        savedLink = linkColor;
+        paintAccent();
         buildThemeGrid(forcedTheme);
         // Stored under `uiLanguage`, not the old `language` key: that one was
         // also written by AIS flag clicks (removed UA/RU feature), so it could
@@ -193,6 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
         colorOptions.forEach(option => {
             option.classList.toggle('selected', option.dataset.color === linkColor);
         });
+
+        setStyle(data.uiStyle || 'default');
     });
 
     // Picking a preset overrides colors regardless of the Theme/Accent
@@ -224,6 +243,38 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Interface style (content.js -> html[data-ui], nothing.css); the popup
+    // previews it on itself too
+    const styleButtons = document.querySelectorAll('#styleSwitch button');
+
+    animationsEnabled.addEventListener('change', function () {
+        const animations = this.checked;
+        chrome.storage.local.set({ animations });
+        notifyContentScript({ animations });
+    });
+
+    function setStyle(uiStyle) {
+        currentStyle = uiStyle;
+        const locked = uiStyle === 'nothing';
+        colorGrid.classList.toggle('locked', locked);
+        accentHint.textContent = locked ? t('accentLocked') : '';
+        paintAccent();
+        if (uiStyle === 'nothing') document.body.setAttribute('data-ui', 'nothing');
+        else document.body.removeAttribute('data-ui');
+        styleButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.uiStyle === uiStyle);
+        });
+    }
+
+    styleButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const uiStyle = this.dataset.uiStyle;
+            chrome.storage.local.set({ uiStyle });
+            setStyle(uiStyle);
+            notifyContentScript({ uiStyle });
+        });
+    });
+
     languageButtons.forEach(btn => {
         btn.addEventListener('click', function () {
             const language = this.dataset.lang;
@@ -242,7 +293,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const linkColor = this.dataset.color;
 
             chrome.storage.local.set({ linkColor, forcedTheme: '' });
-            document.documentElement.style.setProperty('--link', linkColor);
+            savedLink = linkColor;
+            paintAccent();
             colorOptions.forEach(opt => opt.classList.remove('selected'));
             this.classList.add('selected');
             setActiveThemeChip('');

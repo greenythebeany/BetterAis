@@ -274,9 +274,61 @@
     document.body.prepend(bar, scrim, drawer);
   }
 
+  // Portal tab strips scroll sideways when the tabs don't fit (style.css
+  // keeps them on one line). The scrollbar is hidden, so: the vertical mouse
+  // wheel scrolls the strip horizontally, and is-scroll-start/-end classes
+  // drive an edge fade that shows more tabs are hidden on that side.
+  function enhanceTabStrips(root) {
+    root.querySelectorAll('table.portal_menu tr').forEach((strip) => {
+      if (strip.dataset.betteraisStrip) return;
+      strip.dataset.betteraisStrip = '1';
+      const update = () => {
+        const max = strip.scrollWidth - strip.clientWidth;
+        strip.classList.toggle('is-scroll-start', max > 1 && strip.scrollLeft > 1);
+        strip.classList.toggle('is-scroll-end', max > 1 && strip.scrollLeft < max - 1);
+      };
+      strip.addEventListener('wheel', (event) => {
+        if (strip.scrollWidth <= strip.clientWidth || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+        event.preventDefault();
+        strip.scrollLeft += event.deltaY;
+      }, { passive: false });
+      strip.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+
+      // refit once the web font (Roboto) has arrived and on load - widths
+      // measured with the fallback font are too small, so tabs that "fit"
+      // at DOMContentLoaded wrapped again a moment later
+      fitOneLine(strip);
+      if (document.fonts) document.fonts.ready.then(() => fitOneLine(strip));
+      window.addEventListener('load', () => fitOneLine(strip));
+      let frame = 0;
+      window.addEventListener('resize', () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => fitOneLine(strip));
+      });
+    });
+  }
+
+  // Desktop strips wrap when the tabs don't fit (style.css). One or two
+  // stray tabs on a second line looked untidy, so first shrink font and
+  // padding together (--tab-scale) in small steps until every tab shares the
+  // first line - down to 75%; only beyond that is wrapping left to happen.
+  const TAB_SCALES = [1, .95, .9, .86, .83, .8, .77, .75];
+  function fitOneLine(strip) {
+    const tabs = Array.from(strip.querySelectorAll(':scope > td.odsazena'));
+    if (tabs.length < 2) return;
+    const oneLine = () => tabs[tabs.length - 1].offsetTop === tabs[0].offsetTop;
+    for (const scale of TAB_SCALES) {
+      strip.style.setProperty('--tab-scale', scale);
+      if (oneLine()) return;
+    }
+  }
+
   function run() {
     labelTables(document);
     buildMobileNav();
+    enhanceTabStrips(document);
   }
 
   if (document.readyState === 'loading') {

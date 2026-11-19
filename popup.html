@@ -255,6 +255,12 @@
     display: none;
   }
 
+  /* Nothing style forces its red accent - the picker stays visible but inert */
+  .color-grid.locked {
+    opacity: .35;
+    pointer-events: none;
+  }
+
   /* color grid */
   .color-grid {
     display: grid;
@@ -416,6 +422,73 @@
     color: var(--mute);
     margin-top: 14px;
   }
+
+  /* "Nothing" style (body[data-ui="nothing"]) - same system as nothing.css:
+     monochrome palette, Doto display type, Space Mono labels, ink pills */
+  @font-face {
+    font-family: 'Doto'; font-weight: 700; font-display: swap;
+    src: url(fonts/doto-latin-700-normal.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'Space Mono'; font-weight: 400; font-display: swap;
+    src: url(fonts/space-mono-latin-400-normal.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'Space Mono'; font-weight: 700; font-display: swap;
+    src: url(fonts/space-mono-latin-700-normal.woff2) format('woff2');
+  }
+
+  body[data-ui="nothing"].dark-mode {
+    --bg: #000000;
+    --surface: #0b0b0b;
+    --ink: #ffffff;
+    --mute: #a3a3a3;
+    --line: rgba(255, 255, 255, .12);
+  }
+
+  body[data-ui="nothing"].light-mode {
+    --bg: #f2f2f2;
+    --surface: #ffffff;
+    --ink: #000000;
+    --mute: #555555;
+    --line: rgba(0, 0, 0, .12);
+  }
+
+  body[data-ui="nothing"] .brand-name {
+    font-family: 'Doto', 'Space Mono', monospace;
+    font-size: 17px;
+  }
+
+  body[data-ui="nothing"] .card-title,
+  body[data-ui="nothing"] .brand-sub,
+  body[data-ui="nothing"] .footer,
+  body[data-ui="nothing"] .segmented button,
+  body[data-ui="nothing"] .button {
+    font-family: 'Space Mono', ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  body[data-ui="nothing"] .card {
+    border-radius: 14px;
+  }
+
+  body[data-ui="nothing"] .segmented {
+    border-radius: 999px;
+    background: transparent;
+  }
+
+  body[data-ui="nothing"] .segmented button {
+    border-radius: 999px;
+    font-size: 11px;
+  }
+
+  body[data-ui="nothing"] .segmented button.active,
+  body[data-ui="nothing"] .button {
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 999px;
+  }
 </style>
 </head>
 <body class="dark-mode">
@@ -453,6 +526,23 @@
   </div>
 
   <div class="card">
+    <p class="card-title" data-i18n="uiStyle">Style</p>
+    <div class="segmented" id="styleSwitch">
+      <button type="button" data-ui-style="default" data-i18n="uiStyleDefault">Default</button>
+      <button type="button" data-ui-style="nothing">Nothing</button>
+    </div>
+
+    <div class="schedule">
+      <label class="schedule-toggle">
+        <span class="schedule-label" data-i18n="motionLabel">Animations</span>
+        <input type="checkbox" id="animationsEnabled" checked />
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+      <p class="schedule-hint" data-i18n="motionHint">Plays animations even when Windows has them turned off.</p>
+    </div>
+  </div>
+
+  <div class="card">
     <p class="card-title" data-i18n="accent">Accent color</p>
     <div class="color-grid" id="colorGrid">
       <span class="color-option" style="background-color: #7a1030; color: #7a1030;" data-color="#7a1030"></span>
@@ -464,6 +554,7 @@
       <span class="color-option" style="background-color: #22c55e; color: #22c55e;" data-color="#22c55e"></span>
       <span class="color-option" style="background-color: #06b6d4; color: #06b6d4;" data-color="#06b6d4"></span>
     </div>
+    <p class="schedule-hint" id="accentHint"></p>
   </div>
 
   <div class="card">
