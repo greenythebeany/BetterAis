@@ -4511,9 +4511,11 @@ html.light-mode table.betterais-rowtable > tbody > tr.sudy:not(.betterais-card-h
   align-items: center;
   justify-content: center;
   gap: 18px;
-  background: color-mix(in srgb, var(--bg, #f5f5f5) 86%, transparent);
-  -webkit-backdrop-filter: blur(10px) saturate(1.1);
-  backdrop-filter: blur(10px) saturate(1.1);
+  /* light enough that the page fading out / in underneath (see the content
+     crossfade below) is visible through it */
+  background: color-mix(in srgb, var(--bg, #f5f5f5) 65%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  backdrop-filter: blur(6px) saturate(1.1);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -5133,16 +5135,14 @@ html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item + .bread
   opacity: .75;
 }
 
-/* Trail text on the house icon's centre line: a tight line box (the default
-   one is taller than the letters, and accents like "ú" pull the visual
-   centre down) plus a 1px optical lift. */
+/* Trail text on the house icon's and chevrons' centre line: a tight line
+   box, centred by the item's flex layout (a 1px optical lift tried here put
+   the text visibly above the chevrons). */
 html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > a:not(:has(.uf-icon)),
 html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > a:not(:has(.uf-icon)),
 html.dark-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > span,
 html.light-mode #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > span {
   line-height: 1 !important;
-  position: relative;
-  top: -1px;
 }
 
 /* ---- one page width everywhere --------------------------------------------
@@ -5167,10 +5167,33 @@ html.light-mode body > .wholepage {
    main blocks - not the mobile drawer/scrim, which carry their own
    transforms. Off with the Animácie switch. */
 html[data-motion="on"] body > :is(.wholepage, #base, #hlavicka, #betterais-mbar) {
-  transition: opacity .32s cubic-bezier(.4, 0, .2, 1);
+  transition: opacity .5s cubic-bezier(.2, .7, .15, 1), transform .5s cubic-bezier(.2, .7, .15, 1);
 }
 
-html[data-motion="on"].betterais-leaving body > :is(.wholepage, #base, #hlavicka, #betterais-mbar),
+/* leaving: the old page dims and settles back slightly */
+html[data-motion="on"].betterais-leaving body > :is(.wholepage, #base, #hlavicka, #betterais-mbar) {
+  opacity: .15;
+  transform: scale(.985);
+  transition-duration: .35s;
+}
+
+/* arriving: the new page starts hidden a little low, then rises into place
+   as the cover dissolves */
 html[data-motion="on"].betterais-arriving body > :is(.wholepage, #base, #hlavicka, #betterais-mbar) {
   opacity: 0;
+  transform: translateY(12px);
+}
+
+/* Step markers sit in .portal_menu_wrapper, a flex row that aligns to the
+   bottom (flow-end) - while the tab table beside them ends in a 20px margin,
+   so the circle lined up with that margin, ~11px below the tab text. Stretch
+   the marker's box over the tab row only (same 20px bottom margin) and
+   centre the circle in it, so it follows the row whatever the tab size. */
+html.dark-mode .portal_menu_wrapper > .portal_menu_order,
+html.light-mode .portal_menu_wrapper > .portal_menu_order {
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 0 !important; /* the site's 17.6px pushed the circle down */
+  margin-bottom: 20px !important;
 }

@@ -6,7 +6,7 @@ tables, hardcoded pixel widths, inline `font-size: 10px` cells and a maroon head
 replaces that with a flat, modern intranet design in light and dark themes, without breaking any of the
 site's functionality.
 
-**Version 4.0**
+**Version 4.0.1**
 
 ---
 
