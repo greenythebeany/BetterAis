@@ -6,7 +6,7 @@ tables, hardcoded pixel widths, inline `font-size: 10px` cells and a maroon head
 replaces that with a flat, modern intranet design in light and dark themes, without breaking any of the
 site's functionality.
 
-**Version 4.0.1**
+**Version 4.1**
 
 ---
 
@@ -97,19 +97,115 @@ the login page.
 
 ## Installation
 
-The extension is not on the Chrome Web Store, so it is installed manually.
+BetterAis isn't published in any extension store, so you install it from this repository. It takes about
+two minutes. Pick your browser below.
 
-1. Clone the repository:
+| Browser | Works | How it stays installed |
+|---|---|---|
+| Chrome, Brave, Edge, Opera, Vivaldi (desktop) | ✅ | Permanently, after a one-time "Load unpacked" |
+| Firefox (desktop) | ✅ | Until Firefox restarts - or permanently with the autoload tool below |
+| Firefox for Android | ✅ | Until Firefox restarts (pushed from a PC over USB) |
+| Brave / Chrome on Android, Safari, iOS | ❌ | These browsers can't run extensions at all |
+
+### Step 1 - Download BetterAis
+
+**Easiest:** on the [GitHub page](https://github.com/greenythebeany/BetterAis) click the green **Code** button →
+**Download ZIP**, then unzip it somewhere you'll keep it (e.g. `Documents\BetterAis`). Don't delete or move that
+folder afterwards - the browser loads BetterAis from it.
+
+**With git** (makes updating a single command):
+```bash
+git clone https://github.com/greenythebeany/BetterAis.git
+```
+
+You should now have a folder with `manifest.json` directly inside it.
+
+### Step 2a - Chrome, Brave, Edge, Opera, Vivaldi
+
+1. Open the extensions page - type it into the address bar:
+   - Chrome: `chrome://extensions`
+   - Brave: `brave://extensions`
+   - Edge: `edge://extensions`
+2. Turn on **Developer mode** (switch in the top-right corner; in Edge it's on the left).
+3. Click **Load unpacked** and select the BetterAis folder (the one containing `manifest.json`).
+4. Click the puzzle-piece icon in the toolbar and pin **BetterAis**, so its settings are one click away.
+5. Open [is.stuba.sk](https://is.stuba.sk) - done.
+
+It stays installed across restarts. The browser may occasionally show a "developer mode extensions" warning
+on startup - that's normal for anything not from the store; just close it.
+
+### Step 2b - Firefox (desktop)
+
+**Quick try (until Firefox restarts):**
+1. Type `about:debugging#/runtime/this-firefox` into the address bar.
+2. Click **Load Temporary Add-on…**.
+3. Select `manifest.json` inside the BetterAis folder.
+
+Firefox removes it when it closes, because it isn't signed by Mozilla.
+
+**Permanently - autoload tool (Windows):** loads BetterAis automatically every time Firefox starts.
+1. Open `tools\firefox-autoload\betterais.cfg` in Notepad and change the path on the
+   `const BETTERAIS_DIR = ...` line to where *your* BetterAis folder is. Use double backslashes, e.g.
+   `"C:\\Users\\you\\Documents\\BetterAis"`.
+2. Close Firefox completely.
+3. Double-click `tools\firefox-autoload\install.cmd` and allow the administrator prompt.
+4. Start Firefox - BetterAis is loaded.
+
+To remove it again, run `uninstall.cmd` from the same folder.
+
+**Permanently - signed add-on:** Mozilla signs add-ons for free, including private ones that never appear
+in their store. With an addons.mozilla.org account and API keys (Developer Hub → Manage API Keys):
+```bash
+npx web-ext sign --channel=unlisted --source-dir . --api-key YOUR_ISSUER --api-secret YOUR_SECRET
+```
+This produces a signed `.xpi` in `web-ext-artifacts/`; drag it into Firefox to install it for good.
+
+### Step 2c - Firefox for Android
+
+Firefox for Android can't load a folder by itself; you push BetterAis from a PC over a USB cable:
+
+1. On the phone: enable **Developer options → USB debugging** in Android settings, and in Firefox
+   **Settings → Remote debugging via USB**.
+2. Connect the phone, accept the "Allow USB debugging?" prompt.
+3. On the PC, in the BetterAis folder (needs [Node.js](https://nodejs.org) and
+   [adb](https://developer.android.com/tools/releases/platform-tools)):
    ```bash
-   git clone https://github.com/greenythebeany/BetterAis.git
+   npx web-ext run --target firefox-android --firefox-apk org.mozilla.firefox --android-device <device-id>
    ```
-2. Open a Chromium-based browser (Chrome, Brave, or Edge).
-3. Go to `chrome://extensions/` (or `brave://extensions/`).
-4. Enable **Developer mode** in the top-right corner.
-5. Click **Load unpacked**.
-6. Select the project folder, the one containing `manifest.json`.
+   (`adb devices` lists the device id.)
 
-Pin the extension to the toolbar to keep the popup one click away.
+Like desktop, this lasts until Firefox restarts. A signed `.xpi` (see above) can instead be installed for
+good: in Firefox go to **Settings → About Firefox**, tap the Firefox logo five times to unlock the debug
+menu, then **Settings → Install extension from file**.
+
+### Using it
+
+- Click the **BetterAis** icon in the toolbar for settings: light/dark theme (with an optional dark-mode
+  schedule), accent colour, preset themes, the **Default / Nothing** style, animations and language.
+- Changes apply to open AIS tabs immediately.
+- On the timetable page, **Export to calendar (.ics)** downloads your semester for Google, Apple or
+  Outlook calendar.
+
+### Updating
+
+- **Downloaded ZIP:** download the new ZIP and replace the contents of your BetterAis folder (keep the
+  folder where it is).
+- **git:** `git pull` in the folder.
+
+Then reload it: Chrome/Brave/Edge - click ⟳ on the BetterAis card in the extensions page; Firefox with the
+autoload tool - restart Firefox; temporary Firefox install - **Reload** in `about:debugging`. Finally
+refresh the AIS tab with `Ctrl+Shift+R`.
+
+### Troubleshooting
+
+- **Nothing changed on AIS** - make sure BetterAis is enabled on the extensions page, then reload it (⟳)
+  and hard-refresh the page (`Ctrl+Shift+R`).
+- **"Manifest file is missing"** - you selected the wrong folder; pick the one that directly contains
+  `manifest.json` (unzipping often creates a folder inside a folder).
+- **Firefox lost BetterAis after a restart** - expected for a temporary install; use the autoload tool or a
+  signed `.xpi`.
+- **The page looks broken after an update** - reload the extension; old and new files mixed in memory
+  are the usual cause.
 
 ### Applying changes during development
 CSS and content scripts are only re-read when the extension itself is reloaded. After editing any file:

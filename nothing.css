@@ -214,3 +214,222 @@ html[data-ui="nothing"] .betterais-wordmark .wm-text {
   font-weight: 700;
   letter-spacing: 1px;
 }
+
+/* ==========================================================================
+   Nothing rework - every newer surface in the Nothing language: monochrome
+   surfaces, dot-matrix display type, mono caps labels, red only as small
+   indicator dots, dotted rules, ink pills.
+   ========================================================================== */
+
+/* ---- page: faint dot-grid backdrop (Nothing OS wallpaper motif) ---------- */
+html[data-ui="nothing"] body {
+  background:
+    radial-gradient(circle, var(--nd-dot) 1px, transparent 1.3px) 0 0 / 18px 18px,
+    var(--bg) !important;
+}
+
+/* ---- header ---------------------------------------------------------------- */
+
+/* UIS: the whole word in Doto (dot-matrix) - the drawn U and the separate
+   "IS" of the default style are swapped for one dotted text run - with the
+   two red dots kept above the U, made round */
+html[data-ui="nothing"] .betterais-wordmark .wm-u,
+html[data-ui="nothing"] .betterais-wordmark .wm-text {
+  display: none;
+}
+
+html[data-ui="nothing"] .betterais-wordmark .wm-full {
+  display: inline;
+  fill: var(--ink);
+  font: 700 66px/1 var(--nd-display);
+  letter-spacing: 1px;
+}
+
+/* the two red dots ARE the U's top pixels: drawn exactly over the top
+   pixel of each stem, so those two pixels of the matrix turn red. Doto,
+   measured from the font file: pixels 0.075em on a 0.1em grid; the U's
+   outer columns at 0.013em and 0.413em, top row ending 0.688em above the
+   baseline. At 66px with the text at x = -2, y = 58: 4.95px pixels at
+   x -1.14 / 25.26, y 12.59. */
+html[data-ui="nothing"] .betterais-wordmark .wm-dot {
+  y: 12.34px; /* .25px overhang all round so no black edge shows */
+  width: 5.45px;
+  height: 5.45px;
+  rx: 0;
+}
+
+html[data-ui="nothing"] .betterais-wordmark .wm-dot:first-of-type {
+  x: -1.39px;
+}
+
+html[data-ui="nothing"] .betterais-wordmark .wm-dot:nth-of-type(2) {
+  x: 25.01px;
+}
+
+/* time in dot-matrix, name day as a small mono caps label */
+html[data-ui="nothing"] #header .right .info > div:nth-child(2) {
+  font-family: var(--nd-display) !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  letter-spacing: .04em;
+}
+
+html[data-ui="nothing"] #header .betterais-nameday {
+  font-family: var(--nd-label) !important;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 11px !important;
+  color: var(--mute) !important;
+}
+
+html[data-ui="nothing"] .betterais-usermenu-name {
+  font-size: 11.5px !important;
+}
+
+/* ---- breadcrumb: a quiet card pill, red dot marks where you are ---------- */
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"],
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item a,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item::before,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .uf-icon[data-betterais],
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .uf-icon[data-betterais] > .betterais-icon {
+  color: var(--mute) !important;
+}
+
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item.active,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] a:hover,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] a:hover .uf-icon[data-betterais] > .betterais-icon,
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .uf-icon[data-betterais]:hover > .betterais-icon {
+  color: var(--ink) !important;
+}
+
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > a:not(:has(.uf-icon)),
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item > span {
+  font-family: var(--nd-label) !important;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 11.5px !important;
+}
+
+html[data-ui="nothing"] #header ~ nav[aria-label="breadcrumb"] .breadcrumb-item.active > span::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin: 0 9px 1px 0;
+  border-radius: 50%;
+  background: var(--link);
+  vertical-align: middle;
+}
+
+/* ---- dashboard cards --------------------------------------------------------- */
+html[data-ui="nothing"] #menitko .polozky-obal .polozky.prostor-ikona > .sekce-nadpis {
+  font-size: 12.5px !important;
+  color: var(--ink) !important;
+}
+
+/* dotted divider instead of a solid hairline */
+html[data-ui="nothing"] #menitko .polozky-obal > .ramecek-boky > div {
+  background:
+    radial-gradient(circle, var(--card-rule) 1px, transparent 1.3px) 0 61px / 6px 3px repeat-x;
+}
+
+/* links in ink; "important" ones bold with a red bullet dot instead of red text */
+html[data-ui="nothing"] .polozky-obal a {
+  color: var(--ink-2) !important;
+}
+
+html[data-ui="nothing"] .polozky-obal a:has(b),
+html[data-ui="nothing"] .polozky-obal a b,
+html[data-ui="nothing"] .polozky-obal b a {
+  color: var(--ink) !important;
+}
+
+html[data-ui="nothing"] .polozky-obal a:hover {
+  color: var(--ink) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+html[data-ui="nothing"] .polozky-obal ul > li::before {
+  background: var(--line-2);
+}
+
+html[data-ui="nothing"] .polozky-obal ul > li:has(b)::before {
+  background: var(--link);
+}
+
+/* collapsed-section tiles: same dot-grid tile as the open cards' icons */
+html[data-ui="nothing"] .closed-section > a:first-child {
+  background-color: var(--surface-2) !important;
+  background-image: var(--nd-grid) !important;
+  background-size: 5px 5px !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html[data-ui="nothing"] .closed-section > a:last-child {
+  font-family: var(--nd-label) !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ---- buttons: every action an ink pill in mono caps --------------------------- */
+html[data-ui="nothing"] #finder a,
+html[data-ui="nothing"] #otevrit-vse a,
+html[data-ui="nothing"] #zavrit-vse a {
+  background: var(--ink) !important;
+  color: var(--bg) !important;
+  box-shadow: none !important;
+  font-family: var(--nd-label) !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+html[data-ui="nothing"] #finder a:hover,
+html[data-ui="nothing"] #otevrit-vse a:hover,
+html[data-ui="nothing"] #zavrit-vse a:hover {
+  filter: none;
+  opacity: .88;
+}
+
+/* ---- notices: plain hairline cards, ink icons, red only for warnings ---------- */
+html[data-ui="nothing"] .zasadka,
+html[data-ui="nothing"] .zasadky-info,
+html[data-ui="nothing"] .zasadky-crit,
+html[data-ui="nothing"] .zasadky-warning {
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+html[data-ui="nothing"] .betterais-icon-info {
+  color: var(--ink) !important;
+}
+
+html[data-ui="nothing"] .betterais-icon-warn,
+html[data-ui="nothing"] .betterais-icon-danger {
+  color: var(--link) !important;
+}
+
+/* ---- forms + tables ------------------------------------------------------------- */
+html[data-ui="nothing"] input[type="text"],
+html[data-ui="nothing"] input[type="password"],
+html[data-ui="nothing"] input[type="search"],
+html[data-ui="nothing"] select {
+  border-radius: 999px !important;
+}
+
+html[data-ui="nothing"] .mainpage td,
+html[data-ui="nothing"] .mainpage th {
+  font-variant-numeric: tabular-nums;
+}

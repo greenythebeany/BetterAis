@@ -93,10 +93,13 @@
   // is real text in the page font.
   const WORDMARK =
     '<svg class="betterais-wordmark" viewBox="0 0 124 60" role="img" aria-label="UIS">' +
-    '<rect class="wm-dot" x="0" y="2" width="13" height="11" rx="1.5"/>' +
-    '<rect class="wm-dot" x="27" y="2" width="13" height="11" rx="1.5"/>' +
     '<path class="wm-u" d="M6.5 17V38a13.5 13.5 0 0 0 27 0V17"/>' +
     '<text class="wm-text" x="47" y="58">IS</text>' +
+    // Nothing style: the whole word in dot-matrix type instead (nothing.css)
+    '<text class="wm-full" x="-2" y="58">UIS</text>' +
+    // dots last, so in the Nothing style they paint over the U's top pixels
+    '<rect class="wm-dot" x="0" y="2" width="13" height="11" rx="1.5"/>' +
+    '<rect class="wm-dot" x="27" y="2" width="13" height="11" rx="1.5"/>' +
     '</svg>';
 
   function addWordmark(header) {

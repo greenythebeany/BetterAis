@@ -4862,6 +4862,10 @@ html.light-mode #header .left::before {
   stroke-width: 13;
 }
 
+.betterais-wordmark .wm-full {
+  display: none;
+}
+
 .betterais-wordmark .wm-text {
   fill: var(--ink);
   font: 800 79px/1 var(--font-sans);
